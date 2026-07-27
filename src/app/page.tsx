@@ -16,23 +16,30 @@ import { Icon } from "@/components/ui/icon";
 export default function StorefrontHomePage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(null);
+  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(
+    null,
+  );
 
   const [cartItems, setCartItems] = useState<CartItem[]>([
     { perfume: MOCK_PERFUMES[0], selectedMl: 50, price: 24500, quantity: 1 },
     { perfume: MOCK_PERFUMES[2], selectedMl: 50, price: 16500, quantity: 1 },
   ]);
 
-  const handleAddToCart = (perfume: Perfume, selectedMl: number = 50, price: number = perfume.price) => {
+  const handleAddToCart = (
+    perfume: Perfume,
+    selectedMl: number = 50,
+    price: number = perfume.price,
+  ) => {
     setCartItems((prev) => {
       const existing = prev.find(
-        (item) => item.perfume.id === perfume.id && item.selectedMl === selectedMl
+        (item) =>
+          item.perfume.id === perfume.id && item.selectedMl === selectedMl,
       );
       if (existing) {
         return prev.map((item) =>
           item.perfume.id === perfume.id && item.selectedMl === selectedMl
             ? { ...item, quantity: item.quantity + 1 }
-            : item
+            : item,
         );
       }
       return [...prev, { perfume, selectedMl, price, quantity: 1 }];
@@ -41,29 +48,36 @@ export default function StorefrontHomePage() {
   };
 
   const handleUpdateQuantity = (id: string, ml: number, delta: number) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) => {
-          if (item.perfume.id === id && item.selectedMl === ml) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
+    setCartItems(
+      (prev) =>
+        prev
+          .map((item) => {
+            if (item.perfume.id === id && item.selectedMl === ml) {
+              const newQty = item.quantity + delta;
+              return newQty > 0 ? { ...item, quantity: newQty } : null;
+            }
+            return item;
+          })
+          .filter(Boolean) as CartItem[],
     );
   };
 
   const handleRemoveItem = (id: string, ml: number) => {
-    setCartItems((prev) => prev.filter((item) => !(item.perfume.id === id && item.selectedMl === ml)));
+    setCartItems((prev) =>
+      prev.filter(
+        (item) => !(item.perfume.id === id && item.selectedMl === ml),
+      ),
+    );
   };
 
   const featuredBestsellers = MOCK_PERFUMES.slice(0, 3);
-  const cartTotalCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const cartTotalCount = cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-[#F5F5F0] selection:bg-[#D4AF37] selection:text-[#0A0A0B]">
-      
       {/* Navbar */}
       <Navbar
         onOpenCart={() => setCartOpen(true)}
@@ -83,7 +97,8 @@ export default function StorefrontHomePage() {
               <span>Curated Bestsellers</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-serif tracking-[0.15em] uppercase font-light">
-              Signature <span className="italic text-[#E6C687]">Elixirs & Extraits</span>
+              Signature{" "}
+              <span className="italic text-[#E6C687]">Elixirs & Extraits</span>
             </h2>
           </div>
 
@@ -121,11 +136,14 @@ export default function StorefrontHomePage() {
           </div>
 
           <h2 className="text-3xl sm:text-4xl font-serif tracking-[0.15em] uppercase font-light">
-            Uncover Your Signature <span className="italic text-[#E6C687]">Fragrance Aura</span>
+            Uncover Your Signature{" "}
+            <span className="italic text-[#E6C687]">Fragrance Aura</span>
           </h2>
 
           <p className="text-xs text-[#A0A098] max-w-lg mx-auto tracking-wide leading-relaxed">
-            Answer 3 quick aesthetic questions about your preferred mood, olfactory notes, and sillage intensity to receive an instant custom recommendation.
+            Answer 3 quick aesthetic questions about your preferred mood,
+            olfactory notes, and sillage intensity to receive an instant custom
+            recommendation.
           </p>
 
           <Link
@@ -146,24 +164,36 @@ export default function StorefrontHomePage() {
             <span>Patron Experiences</span>
           </div>
           <h2 className="text-3xl font-serif uppercase tracking-widest font-light">
-            Voices of <span className="italic text-[#E6C687]">Connoisseurs</span>
+            Voices of{" "}
+            <span className="italic text-[#E6C687]">Connoisseurs</span>
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {MOCK_REVIEWS.map((rev) => (
-            <div key={rev.id} className="bg-[#121215] border border-white/10 p-8 space-y-4 relative">
+            <div
+              key={rev.id}
+              className="bg-[#121215] border border-white/10 p-8 space-y-4 relative"
+            >
               <div className="flex text-[#D4AF37] gap-1">
                 {[...Array(rev.rating)].map((_, i) => (
-                  <Icon key={i} name="StarIcon" className="w-4 h-4 fill-[#D4AF37]" />
+                  <Icon
+                    key={i}
+                    name="StarIcon"
+                    className="w-4 h-4 fill-[#D4AF37]"
+                  />
                 ))}
               </div>
               <p className="text-xs text-[#C5C5C0] italic leading-relaxed">
                 "{rev.comment}"
               </p>
               <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                <span className="text-xs font-serif text-[#F5F5F0]">{rev.author}</span>
-                <span className="text-[10px] uppercase text-[#D4AF37] font-semibold">Verified Collector</span>
+                <span className="text-xs font-serif text-[#F5F5F0]">
+                  {rev.author}
+                </span>
+                <span className="text-[10px] uppercase text-[#D4AF37] font-semibold">
+                  Verified Collector
+                </span>
               </div>
             </div>
           ))}
@@ -173,13 +203,13 @@ export default function StorefrontHomePage() {
       {/* Footer */}
       <footer className="bg-[#070708] border-t border-white/10 pt-16 pb-12 text-[#999990] text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-10">
-          
           <div className="space-y-4 md:col-span-1">
             <span className="text-xl font-serif tracking-[0.35em] text-[#F5F5F0] uppercase font-light block">
               PARFUM ATELIER
             </span>
             <p className="text-[11px] text-[#777] leading-relaxed">
-              Haute Parfumerie distilled in Grasse, France. Rare botanical harvests, cold maceration, and sacred oriental oud wood.
+              Haute Parfumerie distilled in Grasse, France. Rare botanical
+              harvests, cold maceration, and sacred oriental oud wood.
             </p>
           </div>
 
@@ -188,9 +218,21 @@ export default function StorefrontHomePage() {
               Navigation
             </h4>
             <ul className="space-y-2 text-[#AAA]">
-              <li><Link href="/" className="hover:text-[#D4AF37]">Home</Link></li>
-              <li><Link href="/products" className="hover:text-[#D4AF37]">All Fragrances</Link></li>
-              <li><Link href="/scent-finder" className="hover:text-[#D4AF37]">Scent Finder Quiz</Link></li>
+              <li>
+                <Link href="/" className="hover:text-[#D4AF37]">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link href="/products" className="hover:text-[#D4AF37]">
+                  All Fragrances
+                </Link>
+              </li>
+              <li>
+                <Link href="/scent-finder" className="hover:text-[#D4AF37]">
+                  Scent Finder Quiz
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -199,9 +241,15 @@ export default function StorefrontHomePage() {
               Private Concierge
             </h4>
             <ul className="space-y-2 text-[#AAA]">
-              <li className="hover:text-[#D4AF37] cursor-pointer">Complimentary Consultations</li>
-              <li className="hover:text-[#D4AF37] cursor-pointer">Track Royal Express Shipment</li>
-              <li className="hover:text-[#D4AF37] cursor-pointer">Custom Bottle Engraving</li>
+              <li className="hover:text-[#D4AF37] cursor-pointer">
+                Complimentary Consultations
+              </li>
+              <li className="hover:text-[#D4AF37] cursor-pointer">
+                Track Royal Express Shipment
+              </li>
+              <li className="hover:text-[#D4AF37] cursor-pointer">
+                Custom Bottle Engraving
+              </li>
             </ul>
           </div>
 
@@ -210,7 +258,8 @@ export default function StorefrontHomePage() {
               The Gazette Subscriptions
             </h4>
             <p className="text-[11px] text-[#777]">
-              Receive invitations to private annual micro-harvests and limited edition releases.
+              Receive invitations to private annual micro-harvests and limited
+              edition releases.
             </p>
             <div className="flex">
               <input
@@ -223,13 +272,16 @@ export default function StorefrontHomePage() {
               </button>
             </div>
           </div>
-
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 mt-12 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-[#666]">
-          <p>© 2026 PARFUM ATELIER Paris. All Rights Reserved.</p>
+          <p>© 2026 PARFUM ATELIER India. All Rights Reserved.</p>
           <div className="flex gap-6 mt-4 sm:mt-0">
-            <Link href="/admin" className="hover:text-[#444] transition-colors" title="Secret Portal Gate">
+            <Link
+              href="/admin"
+              className="hover:text-[#444] transition-colors"
+              title="Secret Portal Gate"
+            >
               • Private Access
             </Link>
           </div>
@@ -251,11 +303,7 @@ export default function StorefrontHomePage() {
         onRemoveItem={handleRemoveItem}
       />
 
-      <AuthModal
-        isOpen={authOpen}
-        onClose={() => setAuthOpen(false)}
-      />
-
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

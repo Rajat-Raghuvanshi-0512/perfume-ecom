@@ -14,7 +14,9 @@ import { Icon } from "@/components/ui/icon";
 export default function ProductsPage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(null);
+  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(
+    null,
+  );
 
   const [cartItems, setCartItems] = useState<CartItem[]>([
     { perfume: MOCK_PERFUMES[0], selectedMl: 50, price: 24500, quantity: 1 },
@@ -22,20 +24,28 @@ export default function ProductsPage() {
 
   // Filters State
   const [selectedFamily, setSelectedFamily] = useState<string>("ALL");
-  const [selectedConcentration, setSelectedConcentration] = useState<string>("ALL");
+  const [selectedConcentration, setSelectedConcentration] =
+    useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">("featured");
+  const [sortBy, setSortBy] = useState<
+    "featured" | "price-asc" | "price-desc" | "rating"
+  >("featured");
 
-  const handleAddToCart = (perfume: Perfume, selectedMl: number = 50, price: number = perfume.price) => {
+  const handleAddToCart = (
+    perfume: Perfume,
+    selectedMl: number = 50,
+    price: number = perfume.price,
+  ) => {
     setCartItems((prev) => {
       const existing = prev.find(
-        (item) => item.perfume.id === perfume.id && item.selectedMl === selectedMl
+        (item) =>
+          item.perfume.id === perfume.id && item.selectedMl === selectedMl,
       );
       if (existing) {
         return prev.map((item) =>
           item.perfume.id === perfume.id && item.selectedMl === selectedMl
             ? { ...item, quantity: item.quantity + 1 }
-            : item
+            : item,
         );
       }
       return [...prev, { perfume, selectedMl, price, quantity: 1 }];
@@ -44,31 +54,43 @@ export default function ProductsPage() {
   };
 
   const handleUpdateQuantity = (id: string, ml: number, delta: number) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) => {
-          if (item.perfume.id === id && item.selectedMl === ml) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
+    setCartItems(
+      (prev) =>
+        prev
+          .map((item) => {
+            if (item.perfume.id === id && item.selectedMl === ml) {
+              const newQty = item.quantity + delta;
+              return newQty > 0 ? { ...item, quantity: newQty } : null;
+            }
+            return item;
+          })
+          .filter(Boolean) as CartItem[],
     );
   };
 
   const handleRemoveItem = (id: string, ml: number) => {
-    setCartItems((prev) => prev.filter((item) => !(item.perfume.id === id && item.selectedMl === ml)));
+    setCartItems((prev) =>
+      prev.filter(
+        (item) => !(item.perfume.id === id && item.selectedMl === ml),
+      ),
+    );
   };
 
   // Filter & Sort logic
   const filteredPerfumes = MOCK_PERFUMES.filter((perfume) => {
-    if (selectedFamily !== "ALL" && !perfume.family.includes(selectedFamily)) return false;
-    if (selectedConcentration !== "ALL" && !perfume.concentration.includes(selectedConcentration)) return false;
+    if (selectedFamily !== "ALL" && !perfume.family.includes(selectedFamily))
+      return false;
+    if (
+      selectedConcentration !== "ALL" &&
+      !perfume.concentration.includes(selectedConcentration)
+    )
+      return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const matchName = perfume.name.toLowerCase().includes(q);
-      const matchNotes = perfume.pyramid.top.concat(perfume.pyramid.heart, perfume.pyramid.base).some((n) => n.toLowerCase().includes(q));
+      const matchNotes = perfume.pyramid.top
+        .concat(perfume.pyramid.heart, perfume.pyramid.base)
+        .some((n) => n.toLowerCase().includes(q));
       return matchName || matchNotes;
     }
     return true;
@@ -79,11 +101,13 @@ export default function ProductsPage() {
     return 0;
   });
 
-  const cartTotalCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const cartTotalCount = cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-[#F5F5F0]">
-      
       {/* Navbar */}
       <Navbar
         onOpenCart={() => setCartOpen(true)}
@@ -94,38 +118,41 @@ export default function ProductsPage() {
       {/* Page Header */}
       <div className="bg-[#121215] border-b border-white/10 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-4">
-          
           {/* Breadcrumb Navigation */}
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-[#888]">
-            <Link href="/" className="hover:text-[#D4AF37] transition-colors">Home</Link>
+            <Link href="/" className="hover:text-[#D4AF37] transition-colors">
+              Home
+            </Link>
             <span>/</span>
             <span className="text-[#D4AF37]">Fragrance Catalog</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-serif uppercase tracking-[0.15em] font-light text-[#F5F5F0]">
-            The Complete <span className="italic text-[#E6C687]">Olfactory Collection</span>
+            The Complete{" "}
+            <span className="italic text-[#E6C687]">Olfactory Collection</span>
           </h1>
           <p className="text-xs text-[#A0A098] max-w-xl leading-relaxed tracking-wide">
-            Explore cold-macerated extraits, rare Cambodian oud wood accords, and hand-plucked botanical elixirs distilled in Grasse, France.
+            Explore cold-macerated extraits, rare Cambodian oud wood accords,
+            and hand-plucked botanical elixirs distilled in Grasse, France.
           </p>
         </div>
       </div>
 
       {/* Main Catalog Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        
         <div className="flex flex-col lg:flex-row gap-10">
-          
           {/* Left Sidebar Filter Column */}
           <aside className="w-full lg:w-64 space-y-8 shrink-0">
-            
             {/* Search Input */}
             <div className="space-y-2">
               <label className="text-[11px] uppercase tracking-wider text-[#D4AF37] font-semibold block">
                 Search Notes
               </label>
               <div className="relative">
-                <Icon name="Search01Icon" className="w-4 h-4 text-[#777] absolute left-3 top-3" />
+                <Icon
+                  name="Search01Icon"
+                  className="w-4 h-4 text-[#777] absolute left-3 top-3"
+                />
                 <input
                   type="text"
                   placeholder="Oud, Amber, Vanilla..."
@@ -142,7 +169,15 @@ export default function ProductsPage() {
                 Fragrance Family
               </label>
               <div className="space-y-1.5 text-xs text-[#C5C5C0]">
-                {["ALL", "Oriental", "Woody", "Floral", "Fresh", "Gourmand", "Leather"].map((fam) => (
+                {[
+                  "ALL",
+                  "Oriental",
+                  "Woody",
+                  "Floral",
+                  "Fresh",
+                  "Gourmand",
+                  "Leather",
+                ].map((fam) => (
                   <button
                     key={fam}
                     onClick={() => setSelectedFamily(fam)}
@@ -152,8 +187,15 @@ export default function ProductsPage() {
                         : "border-transparent hover:bg-white/5"
                     }`}
                   >
-                    <span>{fam === "ALL" ? "All Olfactory Families" : fam}</span>
-                    {selectedFamily === fam && <Icon name="CheckmarkBadge01Icon" className="w-3.5 h-3.5 text-[#D4AF37]" />}
+                    <span>
+                      {fam === "ALL" ? "All Olfactory Families" : fam}
+                    </span>
+                    {selectedFamily === fam && (
+                      <Icon
+                        name="CheckmarkBadge01Icon"
+                        className="w-3.5 h-3.5 text-[#D4AF37]"
+                      />
+                    )}
                   </button>
                 ))}
               </div>
@@ -176,14 +218,21 @@ export default function ProductsPage() {
                     }`}
                   >
                     <span>{conc === "ALL" ? "All Concentrations" : conc}</span>
-                    {selectedConcentration === conc && <Icon name="CheckmarkBadge01Icon" className="w-3.5 h-3.5 text-[#D4AF37]" />}
+                    {selectedConcentration === conc && (
+                      <Icon
+                        name="CheckmarkBadge01Icon"
+                        className="w-3.5 h-3.5 text-[#D4AF37]"
+                      />
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Reset Button */}
-            {(selectedFamily !== "ALL" || selectedConcentration !== "ALL" || searchQuery) && (
+            {(selectedFamily !== "ALL" ||
+              selectedConcentration !== "ALL" ||
+              searchQuery) && (
               <button
                 onClick={() => {
                   setSelectedFamily("ALL");
@@ -195,21 +244,25 @@ export default function ProductsPage() {
                 Reset All Filters
               </button>
             )}
-
           </aside>
 
           {/* Right Product Grid Area */}
           <main className="flex-1 space-y-6">
-            
             {/* Top Toolbar */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#121215] p-4 border border-white/10 text-xs">
               <span className="text-[#888] uppercase tracking-wider">
-                Showing <strong className="text-white">{filteredPerfumes.length}</strong> Artisanal Fragrances
+                Showing{" "}
+                <strong className="text-white">
+                  {filteredPerfumes.length}
+                </strong>{" "}
+                Artisanal Fragrances
               </span>
 
               {/* Sort By Dropdown */}
               <div className="flex items-center gap-2">
-                <span className="text-[#888] uppercase tracking-wider">Sort by:</span>
+                <span className="text-[#888] uppercase tracking-wider">
+                  Sort by:
+                </span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
@@ -226,9 +279,15 @@ export default function ProductsPage() {
             {/* Products Grid */}
             {filteredPerfumes.length === 0 ? (
               <div className="py-24 text-center text-[#888] space-y-3 bg-[#121215] border border-white/5">
-                <p className="text-xs uppercase tracking-widest">No fragrances match your selected criteria.</p>
+                <p className="text-xs uppercase tracking-widest">
+                  No fragrances match your selected criteria.
+                </p>
                 <button
-                  onClick={() => { setSelectedFamily("ALL"); setSelectedConcentration("ALL"); setSearchQuery(""); }}
+                  onClick={() => {
+                    setSelectedFamily("ALL");
+                    setSelectedConcentration("ALL");
+                    setSearchQuery("");
+                  }}
                   className="text-xs text-[#D4AF37] underline uppercase tracking-widest"
                 >
                   Clear Search Filters
@@ -246,21 +305,24 @@ export default function ProductsPage() {
                 ))}
               </div>
             )}
-
           </main>
-
         </div>
-
       </div>
 
       {/* Footer */}
       <footer className="bg-[#070708] border-t border-white/10 py-12 text-[#999990] text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-[#666]">
-          <p>© 2026 PARFUM ATELIER Paris. All Rights Reserved.</p>
+          <p>© 2026 PARFUM ATELIER India. All Rights Reserved.</p>
           <div className="flex gap-6 mt-4 sm:mt-0">
-            <Link href="/" className="hover:text-white">Home</Link>
-            <Link href="/products" className="hover:text-white">Catalog</Link>
-            <Link href="/scent-finder" className="hover:text-white">Scent Finder</Link>
+            <Link href="/" className="hover:text-white">
+              Home
+            </Link>
+            <Link href="/products" className="hover:text-white">
+              Catalog
+            </Link>
+            <Link href="/scent-finder" className="hover:text-white">
+              Scent Finder
+            </Link>
           </div>
         </div>
       </footer>
@@ -269,7 +331,9 @@ export default function ProductsPage() {
       <QuickViewModal
         perfume={quickViewPerfume}
         onClose={() => setQuickViewPerfume(null)}
-        onAddToCart={(perfume, ml, price) => handleAddToCart(perfume, ml, price)}
+        onAddToCart={(perfume, ml, price) =>
+          handleAddToCart(perfume, ml, price)
+        }
       />
 
       <CartDrawer
@@ -280,11 +344,7 @@ export default function ProductsPage() {
         onRemoveItem={handleRemoveItem}
       />
 
-      <AuthModal
-        isOpen={authOpen}
-        onClose={() => setAuthOpen(false)}
-      />
-
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

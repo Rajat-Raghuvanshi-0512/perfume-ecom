@@ -13,16 +13,25 @@ import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { AuthModal } from "@/components/storefront/auth-modal";
 import { Icon } from "@/components/ui/icon";
 
-export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ProductDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const perfume = MOCK_PERFUMES.find((p) => p.id === id) || MOCK_PERFUMES[0];
 
   const [cartOpen, setCartOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(null);
+  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(
+    null,
+  );
 
-  const [selectedMl, setSelectedMl] = useState<number>(perfume.volumes[1]?.ml || 50);
-  const selectedVolumeObj = perfume.volumes.find((v) => v.ml === selectedMl) || perfume.volumes[0];
+  const [selectedMl, setSelectedMl] = useState<number>(
+    perfume.volumes[1]?.ml || 50,
+  );
+  const selectedVolumeObj =
+    perfume.volumes.find((v) => v.ml === selectedMl) || perfume.volumes[0];
   const activePrice = selectedVolumeObj.price;
   const [activeImgIndex, setActiveImgIndex] = useState<number>(0);
 
@@ -30,14 +39,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     { perfume, selectedMl, price: activePrice, quantity: 1 },
   ]);
 
-  const handleAddToCart = (p: Perfume = perfume, ml: number = selectedMl, price: number = activePrice) => {
+  const handleAddToCart = (
+    p: Perfume = perfume,
+    ml: number = selectedMl,
+    price: number = activePrice,
+  ) => {
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.perfume.id === p.id && item.selectedMl === ml);
+      const existing = prev.find(
+        (item) => item.perfume.id === p.id && item.selectedMl === ml,
+      );
       if (existing) {
         return prev.map((item) =>
           item.perfume.id === p.id && item.selectedMl === ml
             ? { ...item, quantity: item.quantity + 1 }
-            : item
+            : item,
         );
       }
       return [...prev, { perfume: p, selectedMl: ml, price, quantity: 1 }];
@@ -45,30 +60,43 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     setCartOpen(true);
   };
 
-  const handleUpdateQuantity = (perfumeId: string, ml: number, delta: number) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) => {
-          if (item.perfume.id === perfumeId && item.selectedMl === ml) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
+  const handleUpdateQuantity = (
+    perfumeId: string,
+    ml: number,
+    delta: number,
+  ) => {
+    setCartItems(
+      (prev) =>
+        prev
+          .map((item) => {
+            if (item.perfume.id === perfumeId && item.selectedMl === ml) {
+              const newQty = item.quantity + delta;
+              return newQty > 0 ? { ...item, quantity: newQty } : null;
+            }
+            return item;
+          })
+          .filter(Boolean) as CartItem[],
     );
   };
 
   const handleRemoveItem = (perfumeId: string, ml: number) => {
-    setCartItems((prev) => prev.filter((item) => !(item.perfume.id === perfumeId && item.selectedMl === ml)));
+    setCartItems((prev) =>
+      prev.filter(
+        (item) => !(item.perfume.id === perfumeId && item.selectedMl === ml),
+      ),
+    );
   };
 
-  const relatedPerfumes = MOCK_PERFUMES.filter((p) => p.id !== perfume.id).slice(0, 3);
-  const cartTotalCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const relatedPerfumes = MOCK_PERFUMES.filter(
+    (p) => p.id !== perfume.id,
+  ).slice(0, 3);
+  const cartTotalCount = cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-[#F5F5F0]">
-      
       {/* Header */}
       <Navbar
         onOpenCart={() => setCartOpen(true)}
@@ -78,19 +106,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Main PDP Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        
         {/* Breadcrumb Navigation */}
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-[#888] mb-8">
-          <Link href="/" className="hover:text-[#D4AF37] transition-colors">Home</Link>
+          <Link href="/" className="hover:text-[#D4AF37] transition-colors">
+            Home
+          </Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-[#D4AF37] transition-colors">Catalog</Link>
+          <Link
+            href="/products"
+            className="hover:text-[#D4AF37] transition-colors"
+          >
+            Catalog
+          </Link>
           <span>/</span>
           <span className="text-[#D4AF37]">{perfume.name}</span>
         </div>
 
         {/* Top Split Section: Gallery & Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-20">
-          
           {/* Left: Gallery */}
           <div className="space-y-4 sticky top-28">
             <div className="relative aspect-[3/4] overflow-hidden bg-[#0A0A0B] border border-white/10 shadow-2xl">
@@ -112,10 +145,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     key={idx}
                     onClick={() => setActiveImgIndex(idx)}
                     className={`w-20 h-24 border ${
-                      activeImgIndex === idx ? "border-[#D4AF37]" : "border-white/10 opacity-60 hover:opacity-100"
+                      activeImgIndex === idx
+                        ? "border-[#D4AF37]"
+                        : "border-white/10 opacity-60 hover:opacity-100"
                     } overflow-hidden transition-all`}
                   >
-                    <img src={img} alt="Thumbnail" className="w-full h-full object-cover" />
+                    <img
+                      src={img}
+                      alt="Thumbnail"
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -124,7 +163,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Right: Product Spec & Buy Actions */}
           <div className="space-y-8">
-            
             <div>
               <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-[#D4AF37] font-semibold mb-2">
                 <Icon name="SparklesIcon" className="w-4 h-4" />
@@ -151,11 +189,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <div className="flex items-center gap-2 text-xs text-[#E6C687]">
                 <div className="flex gap-0.5 text-[#D4AF37]">
                   {[...Array(5)].map((_, i) => (
-                    <Icon key={i} name="StarIcon" className="w-4 h-4 fill-[#D4AF37]" />
+                    <Icon
+                      key={i}
+                      name="StarIcon"
+                      className="w-4 h-4 fill-[#D4AF37]"
+                    />
                   ))}
                 </div>
-                <span className="font-semibold text-white">{perfume.rating}</span>
-                <span className="text-[#777]">({perfume.reviewsCount} reviews)</span>
+                <span className="font-semibold text-white">
+                  {perfume.rating}
+                </span>
+                <span className="text-[#777]">
+                  ({perfume.reviewsCount} reviews)
+                </span>
               </div>
             </div>
 
@@ -180,8 +226,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         : "border-white/15 bg-[#121215] text-[#C5C5C0] hover:border-white/30"
                     }`}
                   >
-                    <span className="block text-base font-serif font-bold">{v.ml} ml</span>
-                    <span className="text-xs text-[#888] font-mono">Rs. {v.price.toLocaleString("en-IN")}</span>
+                    <span className="block text-base font-serif font-bold">
+                      {v.ml} ml
+                    </span>
+                    <span className="text-xs text-[#888] font-mono">
+                      Rs. {v.price.toLocaleString("en-IN")}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -190,16 +240,23 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             {/* Sillage & Longevity Cards */}
             <div className="grid grid-cols-2 gap-4 bg-[#121215] p-4 border border-white/10 text-xs">
               <div className="space-y-1">
-                <span className="text-[10px] text-[#888] uppercase tracking-wider block">Longevity</span>
+                <span className="text-[10px] text-[#888] uppercase tracking-wider block">
+                  Longevity
+                </span>
                 <span className="text-[#F5F5F0] font-semibold flex items-center gap-1.5 text-sm">
                   <Icon name="Clock01Icon" className="w-4 h-4 text-[#D4AF37]" />
                   {perfume.longevity}
                 </span>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-[#888] uppercase tracking-wider block">Sillage Aura</span>
+                <span className="text-[10px] text-[#888] uppercase tracking-wider block">
+                  Sillage Aura
+                </span>
                 <span className="text-[#F5F5F0] font-semibold flex items-center gap-1.5 text-sm">
-                  <Icon name="SparklesIcon" className="w-4 h-4 text-[#D4AF37]" />
+                  <Icon
+                    name="SparklesIcon"
+                    className="w-4 h-4 text-[#D4AF37]"
+                  />
                   {perfume.sillage}
                 </span>
               </div>
@@ -215,7 +272,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </button>
 
             {/* Olfactory Pyramid Component */}
-            <FragrancePyramid pyramid={perfume.pyramid} perfumeName={perfume.name} />
+            <FragrancePyramid
+              pyramid={perfume.pyramid}
+              perfumeName={perfume.name}
+            />
 
             {/* Story & Artisanship Section */}
             <div className="bg-[#121215] border border-white/10 p-6 space-y-3">
@@ -226,9 +286,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 "{perfume.story}"
               </p>
             </div>
-
           </div>
-
         </div>
 
         {/* Customer Reviews Breakdown */}
@@ -244,10 +302,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {MOCK_REVIEWS.map((rev) => (
-              <div key={rev.id} className="bg-[#121215] border border-white/10 p-6 space-y-3">
+              <div
+                key={rev.id}
+                className="bg-[#121215] border border-white/10 p-6 space-y-3"
+              >
                 <div className="flex text-[#D4AF37] gap-1">
                   {[...Array(rev.rating)].map((_, i) => (
-                    <Icon key={i} name="StarIcon" className="w-4 h-4 fill-[#D4AF37]" />
+                    <Icon
+                      key={i}
+                      name="StarIcon"
+                      className="w-4 h-4 fill-[#D4AF37]"
+                    />
                   ))}
                 </div>
                 <p className="text-xs text-[#C5C5C0] italic leading-relaxed">
@@ -278,17 +343,22 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             ))}
           </div>
         </section>
-
       </div>
 
       {/* Footer */}
       <footer className="bg-[#070708] border-t border-white/10 py-12 text-[#999990] text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-[#666]">
-          <p>© 2026 PARFUM ATELIER Paris. All Rights Reserved.</p>
+          <p>© 2026 PARFUM ATELIER India. All Rights Reserved.</p>
           <div className="flex gap-6 mt-4 sm:mt-0">
-            <Link href="/" className="hover:text-white">Home</Link>
-            <Link href="/products" className="hover:text-white">Catalog</Link>
-            <Link href="/scent-finder" className="hover:text-white">Scent Finder</Link>
+            <Link href="/" className="hover:text-white">
+              Home
+            </Link>
+            <Link href="/products" className="hover:text-white">
+              Catalog
+            </Link>
+            <Link href="/scent-finder" className="hover:text-white">
+              Scent Finder
+            </Link>
           </div>
         </div>
       </footer>
@@ -308,11 +378,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         onRemoveItem={handleRemoveItem}
       />
 
-      <AuthModal
-        isOpen={authOpen}
-        onClose={() => setAuthOpen(false)}
-      />
-
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }
