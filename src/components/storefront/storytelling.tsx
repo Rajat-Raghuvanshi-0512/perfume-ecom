@@ -52,7 +52,7 @@ export function Storytelling() {
             </div>
 
             <p className="text-sm text-[#B5B5A8] leading-relaxed tracking-wide font-light">
-              Founded in the high-altitude hills of Grasse, France, Maison de Aura preserves the sacred tradition of slow cold-maceration. We source raw ingredients from ethical micro-farms across the globe—wild Cambodian oud wood, hand-plucked Florentine iris roots, and nocturnal Damask roses.
+              Founded in the high-altitude hills of Grasse, France, Parfum Atelier preserves the sacred tradition of slow cold-maceration. We source raw ingredients from ethical micro-farms across the globe—wild Cambodian oud wood, hand-plucked Florentine iris roots, and nocturnal Damask roses.
             </p>
 
             {/* Pillars */}

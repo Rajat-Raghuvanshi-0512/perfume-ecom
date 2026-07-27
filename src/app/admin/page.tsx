@@ -24,6 +24,10 @@ const MOCK_ADMIN_ORDERS: AdminOrder[] = [
 ];
 
 export default function AdminDashboardPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passcode, setPasscode] = useState("");
+  const [passcodeError, setPasscodeError] = useState(false);
+
   const [activeTab, setActiveTab] = useState<"dashboard" | "products" | "orders">("dashboard");
   const [perfumesList, setPerfumesList] = useState<Perfume[]>(MOCK_PERFUMES);
   const [ordersList, setOrdersList] = useState<AdminOrder[]>(MOCK_ADMIN_ORDERS);
@@ -39,6 +43,16 @@ export default function AdminDashboardPage() {
   const [newHeartNotes, setNewHeartNotes] = useState("Damask Rose, Jasmine");
   const [newBaseNotes, setNewBaseNotes] = useState("Oud, Amber, Vanilla");
 
+  const handleAuthenticate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passcode === "1234" || passcode === "admin") {
+      setIsAuthenticated(true);
+      setPasscodeError(false);
+    } else {
+      setPasscodeError(true);
+    }
+  };
+
   const handleDeleteProduct = (id: string) => {
     setPerfumesList((prev) => prev.filter((p) => p.id !== id));
   };
@@ -49,7 +63,7 @@ export default function AdminDashboardPage() {
       id: `perfume-${Date.now()}`,
       name: newPerfumeName || "New Artisanal Elixir",
       subtitle: newSubtitle || "Handcrafted Distillation",
-      brand: "MAISON DE AURA",
+      brand: "PARFUM ATELIER",
       price: Number(newPrice) || 18500,
       volumes: [
         { ml: 30, price: Math.round(Number(newPrice) * 0.7) },
@@ -88,6 +102,63 @@ export default function AdminDashboardPage() {
     );
   };
 
+  // PASSCODE AUTH GATE SCREEN
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0B] text-[#F5F5F0] flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-[#121215] border border-[#D4AF37]/30 p-8 shadow-2xl space-y-6 text-center">
+          
+          <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] flex items-center justify-center mx-auto">
+            <Icon name="LockKeyIcon" className="w-7 h-7" />
+          </div>
+
+          <div className="space-y-1">
+            <h1 className="text-xl font-serif tracking-[0.2em] uppercase font-light text-[#F5F5F0]">
+              Atelier Console Gate
+            </h1>
+            <p className="text-xs text-[#A0A098]">
+              Restricted management console. Enter passkey to proceed.
+            </p>
+          </div>
+
+          <form onSubmit={handleAuthenticate} className="space-y-4">
+            <div>
+              <input
+                type="password"
+                required
+                value={passcode}
+                onChange={(e) => {
+                  setPasscode(e.target.value);
+                  setPasscodeError(false);
+                }}
+                placeholder="Enter PIN (e.g. 1234)"
+                className="w-full bg-[#18181D] border border-white/15 focus:border-[#D4AF37] text-center text-sm tracking-[0.4em] p-3 text-white outline-none placeholder-[#666]"
+                autoFocus
+              />
+              {passcodeError && (
+                <p className="text-[11px] text-red-400 mt-2 font-mono">Incorrect PIN passcode. Try "1234"</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 bg-[#D4AF37] text-[#0A0A0B] font-bold text-xs uppercase tracking-[0.25em] hover:bg-[#E6C687] transition-colors"
+            >
+              Unlock Console
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-white/10">
+            <Link href="/" className="text-xs text-[#888] hover:text-[#D4AF37] uppercase tracking-wider">
+              Return to Public Storefront
+            </Link>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-[#F5F5F0]">
       
@@ -112,38 +183,48 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="flex items-center space-x-2 text-xs uppercase tracking-wider">
+          <div className="flex items-center space-x-4">
+            <nav className="flex items-center space-x-2 text-xs uppercase tracking-wider">
+              <button
+                onClick={() => setActiveTab("dashboard")}
+                className={`px-4 py-2 border transition-all ${
+                  activeTab === "dashboard"
+                    ? "border-[#D4AF37] bg-[#D4AF37] text-[#0A0A0B] font-bold"
+                    : "border-transparent text-[#AAA] hover:text-white"
+                }`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setActiveTab("products")}
+                className={`px-4 py-2 border transition-all ${
+                  activeTab === "products"
+                    ? "border-[#D4AF37] bg-[#D4AF37] text-[#0A0A0B] font-bold"
+                    : "border-transparent text-[#AAA] hover:text-white"
+                }`}
+              >
+                Products ({perfumesList.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("orders")}
+                className={`px-4 py-2 border transition-all ${
+                  activeTab === "orders"
+                    ? "border-[#D4AF37] bg-[#D4AF37] text-[#0A0A0B] font-bold"
+                    : "border-transparent text-[#AAA] hover:text-white"
+                }`}
+              >
+                Orders ({ordersList.length})
+              </button>
+            </nav>
+
             <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`px-4 py-2 border transition-all ${
-                activeTab === "dashboard"
-                  ? "border-[#D4AF37] bg-[#D4AF37] text-[#0A0A0B] font-bold"
-                  : "border-transparent text-[#AAA] hover:text-white"
-              }`}
+              onClick={() => setIsAuthenticated(false)}
+              className="p-2 text-[#888] hover:text-red-400 transition-colors border border-white/10"
+              title="Lock Session"
             >
-              Overview
+              <Icon name="LockKeyIcon" className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => setActiveTab("products")}
-              className={`px-4 py-2 border transition-all ${
-                activeTab === "products"
-                  ? "border-[#D4AF37] bg-[#D4AF37] text-[#0A0A0B] font-bold"
-                  : "border-transparent text-[#AAA] hover:text-white"
-              }`}
-            >
-              Products ({perfumesList.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("orders")}
-              className={`px-4 py-2 border transition-all ${
-                activeTab === "orders"
-                  ? "border-[#D4AF37] bg-[#D4AF37] text-[#0A0A0B] font-bold"
-                  : "border-transparent text-[#AAA] hover:text-white"
-              }`}
-            >
-              Orders ({ordersList.length})
-            </button>
-          </nav>
+          </div>
         </div>
       </header>
 

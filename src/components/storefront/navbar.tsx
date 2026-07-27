@@ -24,7 +24,7 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
       </div>
 
       {/* Main Glass Header */}
-      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-[#0A0A0B]/85 border-b border-white/10 transition-all duration-300">
+      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-[#0A0A0B]/90 border-b border-white/10 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
           {/* Mobile Menu Toggle */}
@@ -38,36 +38,37 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
             </button>
           </div>
 
-          {/* Brand Logo */}
+          {/* Generic Luxury Brand Logo */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="group flex flex-col items-center sm:items-start">
-              <span className="text-xl sm:text-2xl font-serif tracking-[0.35em] text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors duration-300 font-extralight uppercase">
-                Maison de Aura
-              </span>
-              <span className="text-[10px] tracking-[0.4em] text-[#D4AF37]/70 uppercase font-light -mt-1">
-                Haute Parfumerie • Paris
-              </span>
+            <Link href="/" className="group flex items-center gap-3">
+              <div className="w-9 h-9 border border-[#D4AF37]/40 rounded-full flex items-center justify-center text-[#D4AF37] group-hover:border-[#D4AF37] group-hover:bg-[#D4AF37]/10 transition-all">
+                <span className="font-serif text-sm font-bold tracking-tighter">AP</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-lg sm:text-xl font-serif tracking-[0.3em] text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors duration-300 font-light uppercase">
+                  PARFUM ATELIER
+                </span>
+                <span className="text-[9px] tracking-[0.35em] text-[#D4AF37]/70 uppercase font-light -mt-0.5">
+                  Haute Parfumerie
+                </span>
+              </div>
             </Link>
           </div>
 
-          {/* Navigation Links - Desktop */}
+          {/* Navigation Links - Desktop (Pointing to dedicated page routes) */}
           <nav className="hidden lg:flex items-center space-x-8 text-xs font-medium tracking-[0.2em] uppercase text-[#C5C5C0]">
             <Link href="/" className="hover:text-[#D4AF37] transition-colors duration-200 py-1 border-b border-transparent hover:border-[#D4AF37]">
               Home
             </Link>
-            <Link href="#catalog" className="hover:text-[#D4AF37] transition-colors duration-200 py-1 border-b border-transparent hover:border-[#D4AF37]">
-              Catalog
+            <Link href="/products" className="hover:text-[#D4AF37] transition-colors duration-200 py-1 border-b border-transparent hover:border-[#D4AF37]">
+              All Fragrances
             </Link>
-            <Link href="#scent-quiz" className="flex items-center gap-1.5 text-[#E6C687] hover:text-white transition-colors duration-200 py-1 px-2.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30">
+            <Link href="/scent-finder" className="flex items-center gap-1.5 text-[#E6C687] hover:text-white transition-colors duration-200 py-1 px-3 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30">
               <Icon name="SparklesIcon" className="w-3.5 h-3.5 text-[#D4AF37]" />
-              Scent Quiz
+              Scent Finder
             </Link>
-            <Link href="#storytelling" className="hover:text-[#D4AF37] transition-colors duration-200 py-1 border-b border-transparent hover:border-[#D4AF37]">
+            <Link href="/#storytelling" className="hover:text-[#D4AF37] transition-colors duration-200 py-1 border-b border-transparent hover:border-[#D4AF37]">
               Heritage
-            </Link>
-            <Link href="/admin" className="hover:text-[#D4AF37] transition-colors duration-200 py-1 border-b border-transparent hover:border-[#D4AF37] flex items-center gap-1">
-              <Icon name="CrownIcon" className="w-3.5 h-3.5 text-[#D4AF37]" />
-              Admin Panel
             </Link>
           </nav>
 
@@ -125,26 +126,22 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
           </div>
         )}
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile Navigation Drawer (No public admin link) */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-white/10 bg-[#0E0E10] px-6 py-6 space-y-4 animate-in fade-in duration-200">
             <nav className="flex flex-col space-y-4 text-sm tracking-widest uppercase text-[#C5C5C0]">
               <Link href="/" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#D4AF37]">
                 Home
               </Link>
-              <Link href="#catalog" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#D4AF37]">
-                Fragrance Catalog
+              <Link href="/products" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#D4AF37]">
+                All Fragrances
               </Link>
-              <Link href="#scent-quiz" onClick={() => setMobileMenuOpen(false)} className="text-[#E6C687] flex items-center gap-2">
+              <Link href="/scent-finder" onClick={() => setMobileMenuOpen(false)} className="text-[#E6C687] flex items-center gap-2">
                 <Icon name="SparklesIcon" className="w-4 h-4 text-[#D4AF37]" />
-                Interactive Scent Quiz
+                Scent Finder Quiz
               </Link>
-              <Link href="#storytelling" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#D4AF37]">
+              <Link href="/#storytelling" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#D4AF37]">
                 Brand Heritage
-              </Link>
-              <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="text-[#D4AF37] flex items-center gap-2">
-                <Icon name="CrownIcon" className="w-4 h-4" />
-                Admin Panel UI
               </Link>
             </nav>
             <div className="pt-4 border-t border-white/10">

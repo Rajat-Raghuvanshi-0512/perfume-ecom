@@ -42,21 +42,21 @@ export function Hero() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <a
-            href="#catalog"
+          <Link
+            href="/products"
             className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#E6C687] text-[#0A0A0B] font-bold text-xs uppercase tracking-[0.25em] hover:brightness-110 transition-all shadow-xl shadow-[#D4AF37]/10 flex items-center justify-center gap-3 group"
           >
             <span>Explore Collection</span>
             <Icon name="ArrowRight01Icon" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </a>
+          </Link>
 
-          <a
-            href="#scent-quiz"
+          <Link
+            href="/scent-finder"
             className="w-full sm:w-auto px-8 py-4 bg-[#141417]/80 backdrop-blur-md border border-[#D4AF37]/40 text-[#F5F5F0] font-medium text-xs uppercase tracking-[0.25em] hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] transition-all flex items-center justify-center gap-3"
           >
             <Icon name="Compass01Icon" className="w-4 h-4 text-[#D4AF37]" />
             <span>Interactive Scent Quiz</span>
-          </a>
+          </Link>
         </div>
 
         {/* Feature Badges Strip */}

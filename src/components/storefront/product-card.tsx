@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Perfume } from "@/types/perfume";
 import { Icon } from "@/components/ui/icon";
 
@@ -14,7 +15,7 @@ export function ProductCard({ perfume, onQuickView, onAddToCart }: ProductCardPr
     <div className="group relative bg-[#121215] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 flex flex-col justify-between overflow-hidden">
       
       {/* Top Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-[#0A0A0B] cursor-pointer" onClick={() => onQuickView(perfume)}>
+      <Link href={`/products/${perfume.id}`} className="relative aspect-[3/4] overflow-hidden bg-[#0A0A0B] block">
         
         <img
           src={perfume.images[0]}
@@ -42,7 +43,7 @@ export function ProductCard({ perfume, onQuickView, onAddToCart }: ProductCardPr
         {/* Wishlist Button */}
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
           className="absolute top-3 right-3 p-2 rounded-full bg-black/40 text-white/80 hover:text-[#D4AF37] hover:bg-black/80 transition-colors z-10 backdrop-blur-sm"
           aria-label="Add to Wishlist"
         >
@@ -52,7 +53,9 @@ export function ProductCard({ perfume, onQuickView, onAddToCart }: ProductCardPr
         {/* Quick View Hover Button */}
         <div className="absolute inset-x-4 bottom-4 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
           <button
+            type="button"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               onQuickView(perfume);
             }}
@@ -62,7 +65,7 @@ export function ProductCard({ perfume, onQuickView, onAddToCart }: ProductCardPr
             <span>Quick Olfactory View</span>
           </button>
         </div>
-      </div>
+      </Link>
 
       {/* Card Details */}
       <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
@@ -75,12 +78,11 @@ export function ProductCard({ perfume, onQuickView, onAddToCart }: ProductCardPr
           </div>
 
           {/* Title & Subtitle */}
-          <h3 
-            onClick={() => onQuickView(perfume)}
-            className="text-base font-serif tracking-wider text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors cursor-pointer line-clamp-1"
-          >
-            {perfume.name}
-          </h3>
+          <Link href={`/products/${perfume.id}`} className="block">
+            <h3 className="text-base font-serif tracking-wider text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors line-clamp-1">
+              {perfume.name}
+            </h3>
+          </Link>
 
           <p className="text-xs text-[#888880] line-clamp-1 mt-0.5 font-light">
             {perfume.subtitle}
@@ -106,6 +108,7 @@ export function ProductCard({ perfume, onQuickView, onAddToCart }: ProductCardPr
           </div>
 
           <button
+            type="button"
             onClick={() => onAddToCart(perfume)}
             className="px-3.5 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/40 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0A0A0B] transition-colors text-xs uppercase tracking-wider font-semibold flex items-center gap-1.5"
           >
