@@ -130,6 +130,13 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
                     <div className="px-4 py-2 border-b border-white/10 font-mono text-[10px] text-[#A0A098] truncate">
                       {session.user.email}
                     </div>
+                    <Link
+                      href="/profile"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="block px-4 py-2.5 text-[#C5C5C0] hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition-colors"
+                    >
+                      My Profile & Addresses
+                    </Link>
                     {((session.user as any)?.role === "ADMIN" ||
                       (session.user as any)?.role === "SUPERADMIN") && (
                       <Link

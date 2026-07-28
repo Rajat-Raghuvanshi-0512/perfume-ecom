@@ -5,10 +5,12 @@ import Link from "next/link";
 import { MOCK_PERFUMES } from "@/lib/mock-perfumes";
 import { Perfume, CartItem } from "@/types/perfume";
 import { Navbar } from "@/components/storefront/navbar";
+import { useSession } from "next-auth/react";
 import { ProductCard } from "@/components/storefront/product-card";
 import { QuickViewModal } from "@/components/storefront/quick-view-modal";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { AuthModal } from "@/components/storefront/auth-modal";
+import { BuyNowModal } from "@/components/storefront/buy-now-modal";
 import { Icon } from "@/components/ui/icon";
 import { ProductGridSkeleton } from "@/components/storefront/storefront-skeletons";
 import { getProducts } from "@/actions/products";
@@ -73,32 +75,35 @@ export default function ProductsPage() {
     });
   };
 
-  const handleBuyNow = async (
+  const { data: session } = useSession();
+  const [buyNowOpen, setBuyNowOpen] = useState(false);
+  const [buyNowSelection, setBuyNowSelection] = useState<{
+    perfume: Perfume;
+    selectedMl: number;
+    price: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (session?.user && buyNowSelection && !buyNowOpen) {
+      setBuyNowOpen(true);
+    }
+  }, [session, buyNowSelection, buyNowOpen]);
+
+  const handleBuyNow = (
     perfume: Perfume,
     selectedMl: number = 50,
     price: number = perfume.price
   ) => {
-    handleAddToCart(perfume, selectedMl, price);
-    toast.add({
-      title: "Initiating Express Checkout",
-      description: `Preparing allocation for ${perfume.name}...`,
-      type: "loading",
-    });
-
-    try {
-      const { createExpressBuyNowSession } = await import("@/actions/checkout");
-      const res = await createExpressBuyNowSession(
-        perfume.id,
-        perfume.name,
-        selectedMl,
-        price,
-        true
-      );
-      if (res.success && res.url) {
-        window.location.href = res.url;
-      }
-    } catch (e) {
-      console.log("Express checkout error:", e);
+    setBuyNowSelection({ perfume, selectedMl, price });
+    if (!session?.user) {
+      toast.add({
+        title: "VIP Authentication Required",
+        description: "Please sign in or create an account to proceed with Direct Express Purchase.",
+        type: "info",
+      });
+      setAuthOpen(true);
+    } else {
+      setBuyNowOpen(true);
     }
   };
 
@@ -401,6 +406,14 @@ export default function ProductsPage() {
       />
 
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+
+      <BuyNowModal
+        isOpen={buyNowOpen}
+        onClose={() => setBuyNowOpen(false)}
+        perfume={buyNowSelection?.perfume || null}
+        selectedMl={buyNowSelection?.selectedMl || 50}
+        price={buyNowSelection?.price || 0}
+      />
     </div>
   );
 }

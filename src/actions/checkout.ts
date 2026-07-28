@@ -17,7 +17,22 @@ export interface CheckoutItemInput {
   addSampleVial?: boolean;
 }
 
-export async function createCheckoutSession(items: CheckoutItemInput[], guestEmail?: string) {
+export interface CheckoutAddress {
+  fullName: string;
+  phone: string;
+  streetAddress: string;
+  apartment?: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
+export async function createCheckoutSession(
+  items: CheckoutItemInput[],
+  guestEmail?: string,
+  shippingAddress?: CheckoutAddress
+) {
   try {
     if (!items || items.length === 0) {
       return { success: false, error: "Cart is empty" };
@@ -39,11 +54,17 @@ export async function createCheckoutSession(items: CheckoutItemInput[], guestEma
       quantity: item.quantity,
     }));
 
+    const metadata: Record<string, string> = {};
+    if (shippingAddress) {
+      metadata.shippingAddress = JSON.stringify(shippingAddress);
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
       customer_email: guestEmail || undefined,
       line_items: lineItems,
+      metadata,
       success_url: `${domain}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${domain}/checkout/cancel`,
       shipping_address_collection: {
@@ -64,16 +85,22 @@ export async function createExpressBuyNowSession(
   productName: string,
   volumeMl: number,
   unitPrice: number,
-  addSampleVial: boolean = false
+  addSampleVial: boolean = false,
+  shippingAddress?: CheckoutAddress
 ) {
-  return createCheckoutSession([
-    {
-      productId,
-      productName,
-      volumeMl,
-      unitPrice,
-      quantity: 1,
-      addSampleVial,
-    },
-  ]);
+  return createCheckoutSession(
+    [
+      {
+        productId,
+        productName,
+        volumeMl,
+        unitPrice,
+        quantity: 1,
+        addSampleVial,
+      },
+    ],
+    undefined,
+    shippingAddress
+  );
 }
+

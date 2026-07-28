@@ -48,6 +48,7 @@ model User {
   orders        Order[]
   reviews       Review[]
   scentProfile  ScentProfile?
+  addresses     Address[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -212,3 +213,21 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model Address {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName      String
+  phone         String
+  streetAddress String
+  apartment     String?
+  city          String
+  state         String
+  postalCode    String
+  country       String   @default("India")
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+

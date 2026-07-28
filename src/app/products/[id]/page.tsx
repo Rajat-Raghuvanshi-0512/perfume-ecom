@@ -6,11 +6,13 @@ import { notFound } from "next/navigation";
 import { MOCK_PERFUMES, MOCK_REVIEWS } from "@/lib/mock-perfumes";
 import { Perfume, CartItem } from "@/types/perfume";
 import { Navbar } from "@/components/storefront/navbar";
+import { useSession } from "next-auth/react";
 import { FragrancePyramid } from "@/components/storefront/fragrance-pyramid";
 import { ProductCard } from "@/components/storefront/product-card";
 import { QuickViewModal } from "@/components/storefront/quick-view-modal";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { AuthModal } from "@/components/storefront/auth-modal";
+import { BuyNowModal } from "@/components/storefront/buy-now-modal";
 import { Icon } from "@/components/ui/icon";
 import { ProductDetailSkeleton } from "@/components/storefront/storefront-skeletons";
 import { getProductBySlug, getProducts } from "@/actions/products";
@@ -48,6 +50,38 @@ export default function ProductDetailPage({
   const [cartOpen, setCartOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(null);
+
+  const { data: session } = useSession();
+  const [buyNowOpen, setBuyNowOpen] = useState(false);
+  const [buyNowSelection, setBuyNowSelection] = useState<{
+    perfume: Perfume;
+    selectedMl: number;
+    price: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (session?.user && buyNowSelection && !buyNowOpen) {
+      setBuyNowOpen(true);
+    }
+  }, [session, buyNowSelection, buyNowOpen]);
+
+  const handleBuyNow = (
+    p: Perfume = perfume,
+    ml: number = selectedMl,
+    price: number = activePrice
+  ) => {
+    setBuyNowSelection({ perfume: p, selectedMl: ml, price });
+    if (!session?.user) {
+      toast.add({
+        title: "VIP Authentication Required",
+        description: "Please sign in or create an account to proceed with Direct Express Purchase.",
+        type: "info",
+      });
+      setAuthOpen(true);
+    } else {
+      setBuyNowOpen(true);
+    }
+  };
 
   const [selectedMl, setSelectedMl] = useState<number>(
     perfume.volumes[1]?.ml || 50,
@@ -304,29 +338,7 @@ export default function ProductDetailPage({
               </button>
 
               <button
-                onClick={async () => {
-                  handleAddToCart(perfume, selectedMl, activePrice);
-                  toast.add({
-                    title: "Initiating Express Checkout",
-                    description: `Preparing allocation for ${perfume.name}...`,
-                    type: "loading",
-                  });
-                  try {
-                    const { createExpressBuyNowSession } = await import("@/actions/checkout");
-                    const res = await createExpressBuyNowSession(
-                      perfume.id,
-                      perfume.name,
-                      selectedMl,
-                      activePrice,
-                      true
-                    );
-                    if (res.success && res.url) {
-                      window.location.href = res.url;
-                    }
-                  } catch (e) {
-                    console.log("Express checkout error:", e);
-                  }
-                }}
+                onClick={() => handleBuyNow(perfume, selectedMl, activePrice)}
                 className="py-4 px-4 bg-[#D4AF37] hover:bg-[#E6C687] text-[#0A0A0B] font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-xl flex items-center justify-center gap-2 active:scale-95"
               >
                 <Icon name="FlashIcon" className="w-4 h-4 fill-current" />
@@ -443,6 +455,14 @@ export default function ProductDetailPage({
       />
 
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+
+      <BuyNowModal
+        isOpen={buyNowOpen}
+        onClose={() => setBuyNowOpen(false)}
+        perfume={buyNowSelection?.perfume || null}
+        selectedMl={buyNowSelection?.selectedMl || selectedMl}
+        price={buyNowSelection?.price || activePrice}
+      />
     </div>
   );
 }
