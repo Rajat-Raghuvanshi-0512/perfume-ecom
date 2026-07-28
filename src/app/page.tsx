@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MOCK_PERFUMES, MOCK_REVIEWS } from "@/lib/mock-perfumes";
 import { Perfume, CartItem } from "@/types/perfume";
@@ -12,18 +12,27 @@ import { QuickViewModal } from "@/components/storefront/quick-view-modal";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { AuthModal } from "@/components/storefront/auth-modal";
 import { Icon } from "@/components/ui/icon";
+import { getProducts } from "@/actions/products";
+import { toast } from "@/components/ui/toast";
 
 export default function StorefrontHomePage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(
-    null,
-  );
+  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(null);
+  const [productsList, setProductsList] = useState<Perfume[]>([]);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    { perfume: MOCK_PERFUMES[0], selectedMl: 50, price: 24500, quantity: 1 },
-    { perfume: MOCK_PERFUMES[2], selectedMl: 50, price: 16500, quantity: 1 },
-  ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    async function loadProducts() {
+      const res = await getProducts();
+      if (res.success && res.products) {
+        setProductsList(res.products);
+      }
+    }
+    loadProducts();
+  }, []);
 
   const handleAddToCart = (
     perfume: Perfume,
@@ -45,6 +54,12 @@ export default function StorefrontHomePage() {
       return [...prev, { perfume, selectedMl, price, quantity: 1 }];
     });
     setCartOpen(true);
+
+    toast.add({
+      title: "Added to Atelier Cart",
+      description: `${perfume.name} (${selectedMl}ml) added to your selection.`,
+      type: "success",
+    });
   };
 
   const handleUpdateQuantity = (id: string, ml: number, delta: number) => {
@@ -68,9 +83,55 @@ export default function StorefrontHomePage() {
         (item) => !(item.perfume.id === id && item.selectedMl === ml),
       ),
     );
+    toast.add({
+      title: "Item Removed",
+      description: "Fragrance bottle removed from cart.",
+      type: "info",
+    });
   };
 
-  const featuredBestsellers = MOCK_PERFUMES.slice(0, 3);
+  const handleBuyNow = async (
+    perfume: Perfume,
+    selectedMl: number = 50,
+    price: number = perfume.price
+  ) => {
+    handleAddToCart(perfume, selectedMl, price);
+    toast.add({
+      title: "Initiating Express Checkout",
+      description: `Securing ${perfume.name} allocation...`,
+      type: "loading",
+    });
+
+    try {
+      const { createExpressBuyNowSession } = await import("@/actions/checkout");
+      const res = await createExpressBuyNowSession(
+        perfume.id,
+        perfume.name,
+        selectedMl,
+        price,
+        true
+      );
+      if (res.success && res.url) {
+        window.location.href = res.url;
+      }
+    } catch (e) {
+      console.log("Express checkout redirect:", e);
+    }
+  };
+
+  const handleNewsletterJoin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newsletterEmail) {
+      toast.add({
+        title: "Subscribed to Gazette",
+        description: `Private micro-harvest invitations will be sent to ${newsletterEmail}`,
+        type: "success",
+      });
+      setNewsletterEmail("");
+    }
+  };
+
+  const featuredBestsellers = productsList.slice(0, 3);
   const cartTotalCount = cartItems.reduce(
     (sum, item) => sum + item.quantity,
     0,
@@ -89,14 +150,14 @@ export default function StorefrontHomePage() {
       <Hero />
 
       {/* Featured Bestsellers Showcase */}
-      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-white/10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-12 gap-4">
+      <section className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-white/10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 sm:mb-12 gap-4">
           <div>
             <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-[#D4AF37] font-semibold mb-2">
               <Icon name="SparklesIcon" className="w-4 h-4" />
               <span>Curated Bestsellers</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-serif tracking-[0.15em] uppercase font-light">
+            <h2 className="text-2xl sm:text-4xl font-serif tracking-[0.15em] uppercase font-light">
               Signature{" "}
               <span className="italic text-[#E6C687]">Elixirs & Extraits</span>
             </h2>
@@ -104,7 +165,7 @@ export default function StorefrontHomePage() {
 
           <Link
             href="/products"
-            className="px-6 py-3 border border-[#D4AF37] text-[#D4AF37] text-xs uppercase tracking-[0.2em] font-semibold hover:bg-[#D4AF37] hover:text-[#0A0A0B] transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 sm:px-6 sm:py-3 border border-[#D4AF37] text-[#D4AF37] text-xs uppercase tracking-[0.2em] font-semibold hover:bg-[#D4AF37] hover:text-[#0A0A0B] transition-colors flex items-center gap-2"
           >
             <span>Explore All Fragrances</span>
             <Icon name="ArrowRight01Icon" className="w-4 h-4" />
@@ -112,13 +173,14 @@ export default function StorefrontHomePage() {
         </div>
 
         {/* 3 Featured Products */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
           {featuredBestsellers.map((perfume) => (
             <ProductCard
               key={perfume.id}
               perfume={perfume}
               onQuickView={(p) => setQuickViewPerfume(p)}
-              onAddToCart={(p) => handleAddToCart(p, 50, p.price)}
+              onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
             />
           ))}
         </div>
@@ -261,16 +323,22 @@ export default function StorefrontHomePage() {
               Receive invitations to private annual micro-harvests and limited
               edition releases.
             </p>
-            <div className="flex">
+            <form onSubmit={handleNewsletterJoin} className="flex">
               <input
                 type="email"
+                required
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder="patron@domain.com"
                 className="bg-[#121215] border border-white/15 text-xs p-2.5 text-white outline-none w-full placeholder-[#555]"
               />
-              <button className="bg-[#D4AF37] text-[#0A0A0B] px-4 font-bold text-xs uppercase tracking-widest hover:bg-[#E6C687]">
+              <button
+                type="submit"
+                className="bg-[#D4AF37] text-[#0A0A0B] px-4 font-bold text-xs uppercase tracking-widest hover:bg-[#E6C687] transition-colors"
+              >
                 Join
               </button>
-            </div>
+            </form>
           </div>
         </div>
 
@@ -293,6 +361,7 @@ export default function StorefrontHomePage() {
         perfume={quickViewPerfume}
         onClose={() => setQuickViewPerfume(null)}
         onAddToCart={(p, ml, price) => handleAddToCart(p, ml, price)}
+        onBuyNow={(p, ml, price) => handleBuyNow(p, ml, price)}
       />
 
       <CartDrawer

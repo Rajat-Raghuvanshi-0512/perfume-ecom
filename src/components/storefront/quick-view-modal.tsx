@@ -9,33 +9,49 @@ interface QuickViewModalProps {
   perfume: Perfume | null;
   onClose: () => void;
   onAddToCart: (perfume: Perfume, selectedMl: number, price: number) => void;
+  onBuyNow?: (perfume: Perfume, selectedMl: number, price: number) => void;
 }
 
-export function QuickViewModal({ perfume, onClose, onAddToCart }: QuickViewModalProps) {
+export function QuickViewModal({ perfume, onClose, onAddToCart, onBuyNow }: QuickViewModalProps) {
   if (!perfume) return null;
 
   const [selectedMl, setSelectedMl] = useState<number>(perfume.volumes[1]?.ml || 50);
   const selectedVolumeObj = perfume.volumes.find((v) => v.ml === selectedMl) || perfume.volumes[0];
   const activePrice = selectedVolumeObj.price;
   const [activeImgIndex, setActiveImgIndex] = useState<number>(0);
+  const [isBuyLoading, setIsBuyLoading] = useState<boolean>(false);
+
+  const handleBuyNow = async () => {
+    setIsBuyLoading(true);
+    try {
+      if (onBuyNow) {
+        onBuyNow(perfume, selectedMl, activePrice);
+      } else {
+        onAddToCart(perfume, selectedMl, activePrice);
+      }
+    } finally {
+      setTimeout(() => setIsBuyLoading(false), 800);
+      onClose();
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-[#121215] border border-[#D4AF37]/40 shadow-2xl rounded-none text-[#F5F5F0]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-[#121215] border border-[#D4AF37]/40 shadow-2xl rounded-none text-[#F5F5F0]">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 text-[#888] hover:text-[#D4AF37] bg-black/50 rounded-full transition-colors"
+          className="absolute top-4 right-4 z-20 p-2 text-[#888] hover:text-[#D4AF37] bg-black/60 rounded-full transition-colors border border-white/10"
         >
-          <Icon name="Cancel01Icon" className="w-6 h-6" />
+          <Icon name="Cancel01Icon" className="w-5 h-5" />
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 sm:p-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 p-4 sm:p-8">
           
           {/* Left Column: Image Gallery */}
           <div className="space-y-4">
-            <div className="relative aspect-[3/4] overflow-hidden bg-[#0A0A0B] border border-white/10">
+            <div className="relative aspect-[3/4] max-h-80 sm:max-h-none overflow-hidden bg-[#0A0A0B] border border-white/10">
               <img
                 src={perfume.images[activeImgIndex] || perfume.images[0]}
                 alt={perfume.name}
@@ -48,12 +64,12 @@ export function QuickViewModal({ perfume, onClose, onAddToCart }: QuickViewModal
 
             {/* Thumbnail Selectors */}
             {perfume.images.length > 1 && (
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 {perfume.images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setActiveImgIndex(idx)}
-                    className={`w-16 h-20 border ${
+                    className={`w-14 h-16 border ${
                       activeImgIndex === idx ? "border-[#D4AF37]" : "border-white/10 opacity-60"
                     } overflow-hidden`}
                   >
@@ -64,8 +80,8 @@ export function QuickViewModal({ perfume, onClose, onAddToCart }: QuickViewModal
             )}
           </div>
 
-          {/* Right Column: Perfume Spec & Add to Cart */}
-          <div className="space-y-6">
+          {/* Right Column: Perfume Spec & Dual CTA */}
+          <div className="space-y-5">
             
             <div>
               <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold mb-1">
@@ -98,7 +114,7 @@ export function QuickViewModal({ perfume, onClose, onAddToCart }: QuickViewModal
             </div>
 
             {/* Description */}
-            <p className="text-xs text-[#C5C5C0] leading-relaxed font-light">
+            <p className="text-xs text-[#C5C5C0] leading-relaxed font-light line-clamp-3">
               {perfume.description}
             </p>
 
@@ -107,14 +123,14 @@ export function QuickViewModal({ perfume, onClose, onAddToCart }: QuickViewModal
               <label className="block text-[11px] uppercase tracking-wider text-[#A0A098] font-semibold mb-2">
                 Select Bottle Volume
               </label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2.5">
                 {perfume.volumes.map((v) => (
                   <button
                     key={v.ml}
                     onClick={() => setSelectedMl(v.ml)}
-                    className={`py-3 px-3 border text-center transition-all ${
+                    className={`py-2.5 px-2 border text-center transition-all ${
                       selectedMl === v.ml
-                        ? "border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]"
+                        ? "border-[#D4AF37] bg-[#D4AF37]/15 text-[#D4AF37] font-bold"
                         : "border-white/15 bg-white/5 text-[#C5C5C0] hover:border-white/30"
                     }`}
                   >
@@ -126,7 +142,7 @@ export function QuickViewModal({ perfume, onClose, onAddToCart }: QuickViewModal
             </div>
 
             {/* Longevity & Sillage Gauges */}
-            <div className="grid grid-cols-2 gap-4 bg-[#18181D] p-3 border border-white/5 text-xs">
+            <div className="grid grid-cols-2 gap-3 bg-[#18181D] p-3 border border-white/5 text-xs">
               <div>
                 <span className="text-[10px] text-[#888] uppercase tracking-wider block">Longevity</span>
                 <span className="text-[#F5F5F0] font-semibold flex items-center gap-1">
@@ -143,17 +159,28 @@ export function QuickViewModal({ perfume, onClose, onAddToCart }: QuickViewModal
               </div>
             </div>
 
-            {/* Add to Cart CTA */}
-            <button
-              onClick={() => {
-                onAddToCart(perfume, selectedMl, activePrice);
-                onClose();
-              }}
-              className="w-full py-4 bg-gradient-to-r from-[#D4AF37] to-[#E6C687] text-[#0A0A0B] font-bold text-xs uppercase tracking-[0.25em] hover:brightness-110 transition-all shadow-xl flex items-center justify-center gap-2"
-            >
-              <Icon name="ShoppingBag01Icon" className="w-4 h-4" />
-              <span>Add {selectedMl}ml Bottle to Coffer</span>
-            </button>
+            {/* Dual CTAs: Add to Cart & Instant Buy Now */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={() => {
+                  onAddToCart(perfume, selectedMl, activePrice);
+                  onClose();
+                }}
+                className="py-3.5 px-3 bg-white/5 border border-[#D4AF37]/50 text-[#D4AF37] font-semibold text-xs uppercase tracking-wider hover:bg-[#D4AF37]/20 transition-all flex items-center justify-center gap-2"
+              >
+                <Icon name="ShoppingBag01Icon" className="w-4 h-4" />
+                <span>Add to Cart</span>
+              </button>
+
+              <button
+                onClick={handleBuyNow}
+                disabled={isBuyLoading}
+                className="py-3.5 px-3 bg-[#D4AF37] hover:bg-[#E6C687] text-[#0A0A0B] font-bold text-xs uppercase tracking-wider transition-all shadow-xl flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <Icon name="FlashIcon" className="w-4 h-4 fill-current" />
+                <span>{isBuyLoading ? "Express Checkout..." : "Buy Now"}</span>
+              </button>
+            </div>
 
             {/* Olfactory Pyramid Accordion Preview */}
             <FragrancePyramid pyramid={perfume.pyramid} />

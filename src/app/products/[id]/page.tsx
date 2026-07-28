@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MOCK_PERFUMES, MOCK_REVIEWS } from "@/lib/mock-perfumes";
@@ -12,6 +12,8 @@ import { QuickViewModal } from "@/components/storefront/quick-view-modal";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { AuthModal } from "@/components/storefront/auth-modal";
 import { Icon } from "@/components/ui/icon";
+import { getProductBySlug, getProducts } from "@/actions/products";
+import { toast } from "@/components/ui/toast";
 
 export default function ProductDetailPage({
   params,
@@ -19,25 +21,39 @@ export default function ProductDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const perfume = MOCK_PERFUMES.find((p) => p.id === id) || MOCK_PERFUMES[0];
+  const [perfume, setPerfume] = useState<Perfume>(
+    MOCK_PERFUMES.find((p) => p.id === id) || MOCK_PERFUMES[0]
+  );
+
+  const [relatedPerfumes, setRelatedPerfumes] = useState<Perfume[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      const res = await getProductBySlug(id);
+      if (res.success && res.product) {
+        setPerfume(res.product);
+      }
+      const prodRes = await getProducts({ limit: 4 });
+      if (prodRes.success && prodRes.products) {
+        setRelatedPerfumes(prodRes.products.filter((p: Perfume) => p.id !== id).slice(0, 3));
+      }
+    }
+    loadData();
+  }, [id]);
 
   const [cartOpen, setCartOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(
-    null,
-  );
+  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(null);
 
   const [selectedMl, setSelectedMl] = useState<number>(
     perfume.volumes[1]?.ml || 50,
   );
   const selectedVolumeObj =
-    perfume.volumes.find((v) => v.ml === selectedMl) || perfume.volumes[0];
+    perfume.volumes.find((v) => v.ml === selectedMl) || perfume.volumes[0] || { price: perfume.price, ml: 50 };
   const activePrice = selectedVolumeObj.price;
   const [activeImgIndex, setActiveImgIndex] = useState<number>(0);
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    { perfume, selectedMl, price: activePrice, quantity: 1 },
-  ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const handleAddToCart = (
     p: Perfume = perfume,
@@ -58,6 +74,12 @@ export default function ProductDetailPage({
       return [...prev, { perfume: p, selectedMl: ml, price, quantity: 1 }];
     });
     setCartOpen(true);
+
+    toast.add({
+      title: "Added to Cart",
+      description: `${p.name} (${ml}ml) added to your selection.`,
+      type: "success",
+    });
   };
 
   const handleUpdateQuantity = (
@@ -85,11 +107,13 @@ export default function ProductDetailPage({
         (item) => !(item.perfume.id === perfumeId && item.selectedMl === ml),
       ),
     );
+    toast.add({
+      title: "Item Removed",
+      description: "Fragrance bottle removed from cart.",
+      type: "info",
+    });
   };
 
-  const relatedPerfumes = MOCK_PERFUMES.filter(
-    (p) => p.id !== perfume.id,
-  ).slice(0, 3);
   const cartTotalCount = cartItems.reduce(
     (sum, item) => sum + item.quantity,
     0,
@@ -262,14 +286,46 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* Add to Cart CTA */}
-            <button
-              onClick={() => handleAddToCart(perfume, selectedMl, activePrice)}
-              className="w-full py-5 bg-gradient-to-r from-[#D4AF37] to-[#E6C687] text-[#0A0A0B] font-bold text-xs uppercase tracking-[0.25em] hover:brightness-110 transition-all shadow-xl flex items-center justify-center gap-3"
-            >
-              <Icon name="ShoppingBag01Icon" className="w-5 h-5" />
-              <span>Add {selectedMl}ml Bottle to Velvet Coffer</span>
-            </button>
+            {/* Dual CTAs: Add to Cart & Express Buy Now */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                onClick={() => handleAddToCart(perfume, selectedMl, activePrice)}
+                className="py-4 px-4 bg-white/5 border border-[#D4AF37]/50 text-[#D4AF37] font-semibold text-xs uppercase tracking-[0.2em] hover:bg-[#D4AF37]/20 transition-all flex items-center justify-center gap-2 active:scale-95"
+              >
+                <Icon name="ShoppingBag01Icon" className="w-4 h-4" />
+                <span>Add {selectedMl}ml to Cart</span>
+              </button>
+
+              <button
+                onClick={async () => {
+                  handleAddToCart(perfume, selectedMl, activePrice);
+                  toast.add({
+                    title: "Initiating Express Checkout",
+                    description: `Preparing allocation for ${perfume.name}...`,
+                    type: "loading",
+                  });
+                  try {
+                    const { createExpressBuyNowSession } = await import("@/actions/checkout");
+                    const res = await createExpressBuyNowSession(
+                      perfume.id,
+                      perfume.name,
+                      selectedMl,
+                      activePrice,
+                      true
+                    );
+                    if (res.success && res.url) {
+                      window.location.href = res.url;
+                    }
+                  } catch (e) {
+                    console.log("Express checkout error:", e);
+                  }
+                }}
+                className="py-4 px-4 bg-[#D4AF37] hover:bg-[#E6C687] text-[#0A0A0B] font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-xl flex items-center justify-center gap-2 active:scale-95"
+              >
+                <Icon name="FlashIcon" className="w-4 h-4 fill-current" />
+                <span>Buy Now (Express)</span>
+              </button>
+            </div>
 
             {/* Olfactory Pyramid Component */}
             <FragrancePyramid

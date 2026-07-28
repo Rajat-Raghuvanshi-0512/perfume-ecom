@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { MOCK_PERFUMES } from "@/lib/mock-perfumes";
 import { Perfume } from "@/types/perfume";
 import { Icon } from "@/components/ui/icon";
+import { getProducts } from "@/actions/products";
 
 interface ScentQuizProps {
   onSelectPerfume: (perfume: Perfume) => void;
@@ -16,12 +16,19 @@ export function ScentQuiz({ onSelectPerfume }: ScentQuizProps) {
   const [intensity, setIntensity] = useState<string>("");
   const [matchedPerfume, setMatchedPerfume] = useState<Perfume | null>(null);
 
-  const handleFinish = () => {
-    let match = MOCK_PERFUMES[0];
-    if (notePreference === "Sandalwood") match = MOCK_PERFUMES[2];
-    if (notePreference === "Neroli") match = MOCK_PERFUMES[3];
-    if (notePreference === "Rose") match = MOCK_PERFUMES[1];
-    if (notePreference === "Vanilla") match = MOCK_PERFUMES[4];
+  const handleFinish = async () => {
+    const res = await getProducts();
+    let perfumes = res.products || [];
+
+    if (perfumes.length === 0) return;
+
+    let match = perfumes[0];
+    const found = perfumes.find((p) => {
+      const allNotes = (p.pyramid.top.concat(p.pyramid.heart, p.pyramid.base)).join(" ").toLowerCase();
+      return notePreference && allNotes.includes(notePreference.toLowerCase());
+    });
+
+    if (found) match = found;
 
     setMatchedPerfume(match);
     setStep(4);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MOCK_PERFUMES } from "@/lib/mock-perfumes";
 import { Perfume, CartItem } from "@/types/perfume";
@@ -10,26 +10,36 @@ import { QuickViewModal } from "@/components/storefront/quick-view-modal";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { AuthModal } from "@/components/storefront/auth-modal";
 import { Icon } from "@/components/ui/icon";
+import { getProducts } from "@/actions/products";
+import { toast } from "@/components/ui/toast";
 
 export default function ProductsPage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(
-    null,
-  );
+  const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(null);
+  const [productsList, setProductsList] = useState<Perfume[]>([]);
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    { perfume: MOCK_PERFUMES[0], selectedMl: 50, price: 24500, quantity: 1 },
-  ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   // Filters State
   const [selectedFamily, setSelectedFamily] = useState<string>("ALL");
-  const [selectedConcentration, setSelectedConcentration] =
-    useState<string>("ALL");
+  const [selectedConcentration, setSelectedConcentration] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [sortBy, setSortBy] = useState<
-    "featured" | "price-asc" | "price-desc" | "rating"
-  >("featured");
+  const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">("featured");
+
+  useEffect(() => {
+    async function loadProducts() {
+      const res = await getProducts({
+        family: selectedFamily !== "ALL" ? selectedFamily : undefined,
+        concentration: selectedConcentration !== "ALL" ? selectedConcentration : undefined,
+        search: searchQuery || undefined,
+      });
+      if (res.success && res.products) {
+        setProductsList(res.products);
+      }
+    }
+    loadProducts();
+  }, [selectedFamily, selectedConcentration, searchQuery]);
 
   const handleAddToCart = (
     perfume: Perfume,
@@ -51,6 +61,41 @@ export default function ProductsPage() {
       return [...prev, { perfume, selectedMl, price, quantity: 1 }];
     });
     setCartOpen(true);
+
+    toast.add({
+      title: "Added to Cart",
+      description: `${perfume.name} (${selectedMl}ml) added to your selection.`,
+      type: "success",
+    });
+  };
+
+  const handleBuyNow = async (
+    perfume: Perfume,
+    selectedMl: number = 50,
+    price: number = perfume.price
+  ) => {
+    handleAddToCart(perfume, selectedMl, price);
+    toast.add({
+      title: "Initiating Express Checkout",
+      description: `Preparing allocation for ${perfume.name}...`,
+      type: "loading",
+    });
+
+    try {
+      const { createExpressBuyNowSession } = await import("@/actions/checkout");
+      const res = await createExpressBuyNowSession(
+        perfume.id,
+        perfume.name,
+        selectedMl,
+        price,
+        true
+      );
+      if (res.success && res.url) {
+        window.location.href = res.url;
+      }
+    } catch (e) {
+      console.log("Express checkout error:", e);
+    }
   };
 
   const handleUpdateQuantity = (id: string, ml: number, delta: number) => {
@@ -74,10 +119,15 @@ export default function ProductsPage() {
         (item) => !(item.perfume.id === id && item.selectedMl === ml),
       ),
     );
+    toast.add({
+      title: "Item Removed",
+      description: "Fragrance bottle removed from cart.",
+      type: "info",
+    });
   };
 
   // Filter & Sort logic
-  const filteredPerfumes = MOCK_PERFUMES.filter((perfume) => {
+  const filteredPerfumes = productsList.filter((perfume) => {
     if (selectedFamily !== "ALL" && !perfume.family.includes(selectedFamily))
       return false;
     if (
@@ -294,13 +344,14 @@ export default function ProductsPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
                 {filteredPerfumes.map((perfume) => (
                   <ProductCard
                     key={perfume.id}
                     perfume={perfume}
                     onQuickView={(p) => setQuickViewPerfume(p)}
-                    onAddToCart={(p) => handleAddToCart(p, 50, p.price)}
+                    onAddToCart={handleAddToCart}
+                    onBuyNow={handleBuyNow}
                   />
                 ))}
               </div>
@@ -331,9 +382,8 @@ export default function ProductsPage() {
       <QuickViewModal
         perfume={quickViewPerfume}
         onClose={() => setQuickViewPerfume(null)}
-        onAddToCart={(perfume, ml, price) =>
-          handleAddToCart(perfume, ml, price)
-        }
+        onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
       />
 
       <CartDrawer

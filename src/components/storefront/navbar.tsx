@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 import { Icon } from "@/components/ui/icon";
 
 interface NavbarProps {
@@ -11,8 +12,10 @@ interface NavbarProps {
 }
 
 export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
+  const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   return (
     <>
@@ -68,7 +71,7 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
             </Link>
           </div>
 
-          {/* Navigation Links - Desktop (Pointing to dedicated page routes) */}
+          {/* Navigation Links - Desktop */}
           <nav className="hidden lg:flex items-center space-x-8 text-xs font-medium tracking-[0.2em] uppercase text-[#C5C5C0]">
             <Link
               href="/"
@@ -112,13 +115,52 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
             </button>
 
             {/* Account / Login */}
-            <button
-              onClick={onOpenAuth}
-              className="hidden sm:flex items-center gap-2 text-xs uppercase tracking-wider text-[#C5C5C0] hover:text-[#D4AF37] transition-colors p-2"
-            >
-              <Icon name="UserIcon" className="w-5 h-5" />
-              <span className="hidden md:inline">VIP Sign In</span>
-            </button>
+            {session?.user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 border border-[#D4AF37]/30 px-3 py-1.5 transition-colors"
+                >
+                  <Icon name="CrownIcon" className="w-4 h-4 text-[#D4AF37]" />
+                  <span className="max-w-[120px] truncate font-semibold">{session.user.name || session.user.email}</span>
+                </button>
+
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-[#121215] border border-[#D4AF37]/30 shadow-2xl py-2 z-50 text-xs uppercase tracking-wider animate-in fade-in duration-150">
+                    <div className="px-4 py-2 border-b border-white/10 font-mono text-[10px] text-[#A0A098] truncate">
+                      {session.user.email}
+                    </div>
+                    {((session.user as any)?.role === "ADMIN" ||
+                      (session.user as any)?.role === "SUPERADMIN") && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="block px-4 py-2.5 text-[#C5C5C0] hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition-colors"
+                      >
+                        Admin Portal
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        signOut();
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={onOpenAuth}
+                className="hidden sm:flex items-center gap-2 text-xs uppercase tracking-wider text-[#C5C5C0] hover:text-[#D4AF37] transition-colors p-2"
+              >
+                <Icon name="UserIcon" className="w-5 h-5" />
+                <span className="hidden md:inline">VIP Sign In</span>
+              </button>
+            )}
 
             {/* Cart Drawer Toggle */}
             <button
