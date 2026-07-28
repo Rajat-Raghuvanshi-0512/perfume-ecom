@@ -137,6 +137,13 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
                     >
                       My Profile & Addresses
                     </Link>
+                    <Link
+                      href="/orders"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="block px-4 py-2.5 text-[#C5C5C0] hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition-colors"
+                    >
+                      My Orders & History
+                    </Link>
                     {((session.user as any)?.role === "ADMIN" ||
                       (session.user as any)?.role === "SUPERADMIN") && (
                       <Link
@@ -239,6 +246,24 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
               >
                 Brand Heritage
               </Link>
+              {session?.user && (
+                <>
+                  <Link
+                    href="/orders"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="hover:text-[#D4AF37] text-[#D4AF37]"
+                  >
+                    My Orders
+                  </Link>
+                  <Link
+                    href="/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="hover:text-[#D4AF37]"
+                  >
+                    My Profile & Addresses
+                  </Link>
+                </>
+              )}
             </nav>
             <div className="pt-4 border-t border-white/10">
               <button

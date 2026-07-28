@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
 import {
   getUserAddresses,
@@ -14,6 +15,7 @@ import { AddressFormModal, AddressItem } from "@/components/storefront/address-f
 import { toast } from "@/components/ui/toast";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const { data: session, status } = useSession();
   const [addresses, setAddresses] = useState<AddressItem[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
@@ -117,41 +119,108 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-[#F5F5F0] pb-24">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-[#121215] via-[#1A1A1E] to-[#121215] border-b border-white/10 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 border-2 border-[#D4AF37] flex items-center justify-center text-[#D4AF37] text-2xl font-serif font-bold shadow-xl">
-              {session.user.name?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase() || "U"}
+      <div className="bg-gradient-to-r from-[#121215] via-[#1A1A1E] to-[#121215] border-b border-white/10 py-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Top Quick Navigation Buttons */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-4">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => router.back()}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/5 hover:bg-[#D4AF37] hover:text-[#0A0A0B] border border-white/10 text-xs font-semibold uppercase tracking-wider text-[#F5F5F0] transition-all group"
+              >
+                <Icon name="ArrowLeft01Icon" className="w-4 h-4 text-[#D4AF37] group-hover:text-[#0A0A0B]" />
+                <span>Back</span>
+              </button>
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-[#C5C5C0] hover:text-white uppercase tracking-wider transition-all"
+              >
+                <Icon name="Home01Icon" className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Home</span>
+              </Link>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-serif text-[#F5F5F0]">
-                  {session.user.name || "Valued Patron"}
-                </h1>
-                <span className="px-2.5 py-0.5 bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] uppercase tracking-widest font-bold">
-                  {(session.user as any).role || "VIP Patron"}
-                </span>
-              </div>
-              <p className="text-xs text-[#A0A098] font-mono mt-1">
-                {session.user.email}
-              </p>
-            </div>
+
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-xs text-[#E6C687] hover:text-[#D4AF37] uppercase tracking-wider transition-all"
+            >
+              <Icon name="ShoppingBag01Icon" className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Browse All Fragrances</span>
+            </Link>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/scent-finder"
-              className="px-4 py-2 bg-white/5 border border-white/10 hover:border-[#D4AF37]/40 text-xs text-[#E6C687] uppercase tracking-wider transition-all flex items-center gap-2"
-            >
-              <Icon name="SparklesIcon" className="w-4 h-4 text-[#D4AF37]" />
-              <span>Scent Profile</span>
-            </Link>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-5">
+              <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 border-2 border-[#D4AF37] flex items-center justify-center text-[#D4AF37] text-2xl font-serif font-bold shadow-xl">
+                {session.user.name?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase() || "U"}
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[#D4AF37]">
+                  <Link href="/" className="hover:underline">
+                    Home
+                  </Link>
+                  <span>/</span>
+                  <span className="text-[#F5F5F0]">Patron Profile</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl sm:text-3xl font-serif text-[#F5F5F0]">
+                    {session.user.name || "Valued Patron"}
+                  </h1>
+                  <span className="px-2.5 py-0.5 bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] uppercase tracking-widest font-bold">
+                    {(session.user as any).role || "VIP Patron"}
+                  </span>
+                </div>
+                <p className="text-xs text-[#A0A098] font-mono">
+                  {session.user.email}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/orders"
+                className="px-4 py-2 bg-[#D4AF37] hover:bg-[#E6C687] text-[#0A0A0B] text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-md"
+              >
+                <Icon name="ShoppingBag01Icon" className="w-4 h-4" />
+                <span>My Orders & History</span>
+              </Link>
+              <Link
+                href="/scent-finder"
+                className="px-4 py-2 bg-white/5 border border-white/10 hover:border-[#D4AF37]/40 text-xs text-[#E6C687] uppercase tracking-wider transition-all flex items-center gap-2"
+              >
+                <Icon name="SparklesIcon" className="w-4 h-4 text-[#D4AF37]" />
+                <span>Scent Profile</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Profile Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 space-y-10">
+        
+        {/* Quick Orders Banner Card */}
+        <section className="bg-gradient-to-r from-[#121215] via-[#16161C] to-[#121215] border border-[#D4AF37]/30 p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-[#D4AF37] text-xs font-bold uppercase tracking-widest">
+              <Icon name="ShoppingBag01Icon" className="w-4 h-4" />
+              <span>Order Tracking & History</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-serif text-[#F5F5F0]">
+              View Your Perfume Orders & Delivery Status
+            </h2>
+            <p className="text-xs text-[#A0A098] max-w-xl leading-relaxed">
+              Access your previous haute parfumerie purchases, real-time shipment status, itemized receipts, and instant reordering.
+            </p>
+          </div>
+          <Link
+            href="/orders"
+            className="px-6 py-3 bg-[#D4AF37] hover:bg-[#E6C687] text-[#0A0A0B] font-bold text-xs uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2 shadow-lg shadow-[#D4AF37]/10"
+          >
+            <span>View All Orders</span>
+            <Icon name="ArrowRight01Icon" className="w-4 h-4" />
+          </Link>
+        </section>
         
         {/* Address Book Section */}
         <section className="space-y-6">
