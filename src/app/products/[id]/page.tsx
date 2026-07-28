@@ -53,6 +53,7 @@ export default function ProductDetailPage({
 
   const { data: session } = useSession();
   const [buyNowOpen, setBuyNowOpen] = useState(false);
+  const [pendingAuthForBuyNow, setPendingAuthForBuyNow] = useState(false);
   const [buyNowSelection, setBuyNowSelection] = useState<{
     perfume: Perfume;
     selectedMl: number;
@@ -60,10 +61,11 @@ export default function ProductDetailPage({
   } | null>(null);
 
   useEffect(() => {
-    if (session?.user && buyNowSelection && !buyNowOpen) {
+    if (session?.user && buyNowSelection && pendingAuthForBuyNow) {
+      setPendingAuthForBuyNow(false);
       setBuyNowOpen(true);
     }
-  }, [session, buyNowSelection, buyNowOpen]);
+  }, [session, buyNowSelection, pendingAuthForBuyNow]);
 
   const handleBuyNow = (
     p: Perfume = perfume,
@@ -72,6 +74,7 @@ export default function ProductDetailPage({
   ) => {
     setBuyNowSelection({ perfume: p, selectedMl: ml, price });
     if (!session?.user) {
+      setPendingAuthForBuyNow(true);
       toast.add({
         title: "VIP Authentication Required",
         description: "Please sign in or create an account to proceed with Direct Express Purchase.",
@@ -81,6 +84,12 @@ export default function ProductDetailPage({
     } else {
       setBuyNowOpen(true);
     }
+  };
+
+  const handleCloseBuyNow = () => {
+    setBuyNowOpen(false);
+    setBuyNowSelection(null);
+    setPendingAuthForBuyNow(false);
   };
 
   const [selectedMl, setSelectedMl] = useState<number>(
@@ -458,7 +467,7 @@ export default function ProductDetailPage({
 
       <BuyNowModal
         isOpen={buyNowOpen}
-        onClose={() => setBuyNowOpen(false)}
+        onClose={handleCloseBuyNow}
         perfume={buyNowSelection?.perfume || null}
         selectedMl={buyNowSelection?.selectedMl || selectedMl}
         price={buyNowSelection?.price || activePrice}

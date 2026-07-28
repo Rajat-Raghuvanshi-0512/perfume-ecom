@@ -98,6 +98,7 @@ export default function StorefrontHomePage() {
 
   const { data: session } = useSession();
   const [buyNowOpen, setBuyNowOpen] = useState(false);
+  const [pendingAuthForBuyNow, setPendingAuthForBuyNow] = useState(false);
   const [buyNowSelection, setBuyNowSelection] = useState<{
     perfume: Perfume;
     selectedMl: number;
@@ -105,10 +106,11 @@ export default function StorefrontHomePage() {
   } | null>(null);
 
   useEffect(() => {
-    if (session?.user && buyNowSelection && !buyNowOpen) {
+    if (session?.user && buyNowSelection && pendingAuthForBuyNow) {
+      setPendingAuthForBuyNow(false);
       setBuyNowOpen(true);
     }
-  }, [session, buyNowSelection, buyNowOpen]);
+  }, [session, buyNowSelection, pendingAuthForBuyNow]);
 
   const handleBuyNow = (
     perfume: Perfume,
@@ -117,6 +119,7 @@ export default function StorefrontHomePage() {
   ) => {
     setBuyNowSelection({ perfume, selectedMl, price });
     if (!session?.user) {
+      setPendingAuthForBuyNow(true);
       toast.add({
         title: "Patron Authentication Required",
         description: "Please sign in or create an account to proceed with Direct Express Order.",
@@ -126,6 +129,12 @@ export default function StorefrontHomePage() {
     } else {
       setBuyNowOpen(true);
     }
+  };
+
+  const handleCloseBuyNow = () => {
+    setBuyNowOpen(false);
+    setBuyNowSelection(null);
+    setPendingAuthForBuyNow(false);
   };
 
   const handleNewsletterJoin = (e: React.FormEvent) => {
@@ -389,7 +398,7 @@ export default function StorefrontHomePage() {
 
       <BuyNowModal
         isOpen={buyNowOpen}
-        onClose={() => setBuyNowOpen(false)}
+        onClose={handleCloseBuyNow}
         perfume={buyNowSelection?.perfume || null}
         selectedMl={buyNowSelection?.selectedMl || 50}
         price={buyNowSelection?.price || 0}
