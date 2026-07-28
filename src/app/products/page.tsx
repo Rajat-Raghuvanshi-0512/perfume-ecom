@@ -10,6 +10,7 @@ import { QuickViewModal } from "@/components/storefront/quick-view-modal";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { AuthModal } from "@/components/storefront/auth-modal";
 import { Icon } from "@/components/ui/icon";
+import { ProductGridSkeleton } from "@/components/storefront/storefront-skeletons";
 import { getProducts } from "@/actions/products";
 import { toast } from "@/components/ui/toast";
 
@@ -18,6 +19,7 @@ export default function ProductsPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(null);
   const [productsList, setProductsList] = useState<Perfume[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
@@ -29,6 +31,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     async function loadProducts() {
+      setIsLoading(true);
       const res = await getProducts({
         family: selectedFamily !== "ALL" ? selectedFamily : undefined,
         concentration: selectedConcentration !== "ALL" ? selectedConcentration : undefined,
@@ -37,6 +40,7 @@ export default function ProductsPage() {
       if (res.success && res.products) {
         setProductsList(res.products);
       }
+      setIsLoading(false);
     }
     loadProducts();
   }, [selectedFamily, selectedConcentration, searchQuery]);
@@ -327,7 +331,9 @@ export default function ProductsPage() {
             </div>
 
             {/* Products Grid */}
-            {filteredPerfumes.length === 0 ? (
+            {isLoading ? (
+              <ProductGridSkeleton count={6} />
+            ) : filteredPerfumes.length === 0 ? (
               <div className="py-24 text-center text-[#888] space-y-3 bg-[#121215] border border-white/5">
                 <p className="text-xs uppercase tracking-widest">
                   No fragrances match your selected criteria.

@@ -12,6 +12,7 @@ import { QuickViewModal } from "@/components/storefront/quick-view-modal";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { AuthModal } from "@/components/storefront/auth-modal";
 import { Icon } from "@/components/ui/icon";
+import { ProductDetailSkeleton } from "@/components/storefront/storefront-skeletons";
 import { getProductBySlug, getProducts } from "@/actions/products";
 import { toast } from "@/components/ui/toast";
 
@@ -26,9 +27,11 @@ export default function ProductDetailPage({
   );
 
   const [relatedPerfumes, setRelatedPerfumes] = useState<Perfume[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
+      setIsLoading(true);
       const res = await getProductBySlug(id);
       if (res.success && res.product) {
         setPerfume(res.product);
@@ -37,6 +40,7 @@ export default function ProductDetailPage({
       if (prodRes.success && prodRes.products) {
         setRelatedPerfumes(prodRes.products.filter((p: Perfume) => p.id !== id).slice(0, 3));
       }
+      setIsLoading(false);
     }
     loadData();
   }, [id]);
@@ -129,9 +133,12 @@ export default function ProductDetailPage({
       />
 
       {/* Main PDP Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Breadcrumb Navigation */}
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-[#888] mb-8">
+      {isLoading ? (
+        <ProductDetailSkeleton />
+      ) : (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          {/* Breadcrumb Navigation */}
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-[#888] mb-8">
           <Link href="/" className="hover:text-[#D4AF37] transition-colors">
             Home
           </Link>
@@ -400,6 +407,7 @@ export default function ProductDetailPage({
           </div>
         </section>
       </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-[#070708] border-t border-white/10 py-12 text-[#999990] text-xs">

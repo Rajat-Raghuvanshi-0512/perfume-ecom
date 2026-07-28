@@ -5,6 +5,8 @@ import { Perfume } from "@/types/perfume";
 import { Icon } from "@/components/ui/icon";
 import { getProducts } from "@/actions/products";
 
+import { ScentQuizSkeleton } from "@/components/storefront/storefront-skeletons";
+
 interface ScentQuizProps {
   onSelectPerfume: (perfume: Perfume) => void;
 }
@@ -15,12 +17,17 @@ export function ScentQuiz({ onSelectPerfume }: ScentQuizProps) {
   const [notePreference, setNotePreference] = useState<string>("");
   const [intensity, setIntensity] = useState<string>("");
   const [matchedPerfume, setMatchedPerfume] = useState<Perfume | null>(null);
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
 
   const handleFinish = async () => {
+    setIsCalculating(true);
     const res = await getProducts();
     let perfumes = res.products || [];
 
-    if (perfumes.length === 0) return;
+    if (perfumes.length === 0) {
+      setIsCalculating(false);
+      return;
+    }
 
     let match = perfumes[0];
     const found = perfumes.find((p) => {
@@ -31,6 +38,7 @@ export function ScentQuiz({ onSelectPerfume }: ScentQuizProps) {
     if (found) match = found;
 
     setMatchedPerfume(match);
+    setIsCalculating(false);
     setStep(4);
   };
 
@@ -40,6 +48,7 @@ export function ScentQuiz({ onSelectPerfume }: ScentQuizProps) {
     setNotePreference("");
     setIntensity("");
     setMatchedPerfume(null);
+    setIsCalculating(false);
   };
 
   return (
@@ -61,10 +70,13 @@ export function ScentQuiz({ onSelectPerfume }: ScentQuizProps) {
         </div>
 
         {/* Quiz Container Box */}
-        <div className="bg-[#141418] border border-[#D4AF37]/30 p-8 sm:p-12 shadow-2xl relative">
-          
-          {/* Step Indicator */}
-          {step < 4 && (
+        {isCalculating ? (
+          <ScentQuizSkeleton />
+        ) : (
+          <div className="bg-[#141418] border border-[#D4AF37]/30 p-8 sm:p-12 shadow-2xl relative">
+            
+            {/* Step Indicator */}
+            {step < 4 && (
             <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-8 text-xs uppercase tracking-widest text-[#888]">
               <span>Question 0{step} of 03</span>
               <div className="flex gap-2">
@@ -266,6 +278,7 @@ export function ScentQuiz({ onSelectPerfume }: ScentQuizProps) {
           )}
 
         </div>
+        )}
 
       </div>
     </section>

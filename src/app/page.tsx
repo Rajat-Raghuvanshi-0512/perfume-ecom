@@ -12,6 +12,7 @@ import { QuickViewModal } from "@/components/storefront/quick-view-modal";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { AuthModal } from "@/components/storefront/auth-modal";
 import { Icon } from "@/components/ui/icon";
+import { ProductGridSkeleton } from "@/components/storefront/storefront-skeletons";
 import { getProducts } from "@/actions/products";
 import { toast } from "@/components/ui/toast";
 
@@ -20,16 +21,19 @@ export default function StorefrontHomePage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [quickViewPerfume, setQuickViewPerfume] = useState<Perfume | null>(null);
   const [productsList, setProductsList] = useState<Perfume[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [newsletterEmail, setNewsletterEmail] = useState("");
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   useEffect(() => {
     async function loadProducts() {
+      setIsLoading(true);
       const res = await getProducts();
       if (res.success && res.products) {
         setProductsList(res.products);
       }
+      setIsLoading(false);
     }
     loadProducts();
   }, []);
@@ -173,17 +177,21 @@ export default function StorefrontHomePage() {
         </div>
 
         {/* 3 Featured Products */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
-          {featuredBestsellers.map((perfume) => (
-            <ProductCard
-              key={perfume.id}
-              perfume={perfume}
-              onQuickView={(p) => setQuickViewPerfume(p)}
-              onAddToCart={handleAddToCart}
-              onBuyNow={handleBuyNow}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <ProductGridSkeleton count={3} />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
+            {featuredBestsellers.map((perfume) => (
+              <ProductCard
+                key={perfume.id}
+                perfume={perfume}
+                onQuickView={(p) => setQuickViewPerfume(p)}
+                onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Brand Heritage Storytelling */}

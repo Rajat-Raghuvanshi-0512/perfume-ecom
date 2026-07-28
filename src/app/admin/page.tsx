@@ -10,6 +10,8 @@ import { getAdminOrders, updateOrderStatus } from "@/actions/admin";
 import { toast } from "@/components/ui/toast";
 import { AuthModal } from "@/components/storefront/auth-modal";
 
+import { AdminDashboardSkeleton } from "@/components/admin/admin-skeletons";
+
 interface AdminOrder {
   id: string;
   customerName: string;
@@ -23,6 +25,7 @@ interface AdminOrder {
 export default function AdminDashboardPage() {
   const { data: session, status: sessionStatus } = useSession();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "products" | "orders"
@@ -43,6 +46,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     async function loadAdminData() {
+      setIsLoadingData(true);
       const prodRes = await getProducts();
       if (prodRes.success && prodRes.products) {
         setPerfumesList(prodRes.products);
@@ -51,11 +55,14 @@ export default function AdminDashboardPage() {
       if (ordRes.success && ordRes.orders) {
         setOrdersList(ordRes.orders as any);
       }
+      setIsLoadingData(false);
     }
     if (session?.user) {
       loadAdminData();
+    } else if (sessionStatus !== "loading") {
+      setIsLoadingData(false);
     }
-  }, [session]);
+  }, [session, sessionStatus]);
 
   const handleDeleteProduct = async (id: string) => {
     const target = perfumesList.find((p) => p.id === id);
@@ -116,6 +123,16 @@ export default function AdminDashboardPage() {
   const isAdmin =
     (session?.user as any)?.role === "ADMIN" ||
     (session?.user as any)?.role === "SUPERADMIN";
+
+  if (sessionStatus === "loading" || (session?.user && isLoadingData)) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0B] text-[#F5F5F0] py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <AdminDashboardSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   // NEXTAUTH SESSION & ROLE ACCESS GATE
   if (!session?.user || !isAdmin) {
