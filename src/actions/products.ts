@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
 import { formatPrismaProductToPerfume } from "@/lib/products";
 import { MOCK_PERFUMES } from "@/lib/mock-perfumes";
 import { Perfume } from "@/types/perfume";
@@ -17,45 +17,52 @@ export interface GetProductsFilter {
 
 export async function getProducts(filter?: GetProductsFilter): Promise<{ success: boolean; products: Perfume[]; error?: string }> {
   try {
-    const where: any = { isActive: true };
+    const fetchCached = unstable_cache(
+      async () => {
+        const where: any = { isActive: true };
 
-    if (filter?.family && filter.family !== "ALL") {
-      where.family = { contains: filter.family, mode: "insensitive" };
-    }
+        if (filter?.family && filter.family !== "ALL") {
+          where.family = { contains: filter.family, mode: "insensitive" };
+        }
 
-    if (filter?.concentration && filter.concentration !== "ALL") {
-      where.concentration = { contains: filter.concentration, mode: "insensitive" };
-    }
+        if (filter?.concentration && filter.concentration !== "ALL") {
+          where.concentration = { contains: filter.concentration, mode: "insensitive" };
+        }
 
-    if (filter?.isBestseller) {
-      where.isBestseller = true;
-    }
+        if (filter?.isBestseller) {
+          where.isBestseller = true;
+        }
 
-    if (filter?.isNewRelease) {
-      where.isNewRelease = true;
-    }
+        if (filter?.isNewRelease) {
+          where.isNewRelease = true;
+        }
 
-    if (filter?.search) {
-      where.OR = [
-        { name: { contains: filter.search, mode: "insensitive" } },
-        { subtitle: { contains: filter.search, mode: "insensitive" } },
-        { description: { contains: filter.search, mode: "insensitive" } },
-        { family: { contains: filter.search, mode: "insensitive" } },
-      ];
-    }
+        if (filter?.search) {
+          where.OR = [
+            { name: { contains: filter.search, mode: "insensitive" } },
+            { subtitle: { contains: filter.search, mode: "insensitive" } },
+            { description: { contains: filter.search, mode: "insensitive" } },
+            { family: { contains: filter.search, mode: "insensitive" } },
+          ];
+        }
 
-    const rawProducts = await db.product.findMany({
-      where,
-      take: filter?.limit,
-      include: {
-        variants: true,
-        images: { orderBy: { displayOrder: "asc" } },
-        notes: { include: { note: true } },
-        reviews: true,
+        return await db.product.findMany({
+          where,
+          take: filter?.limit,
+          include: {
+            variants: true,
+            images: { orderBy: { displayOrder: "asc" } },
+            notes: { include: { note: true } },
+            reviews: true,
+          },
+          orderBy: { createdAt: "desc" },
+        });
       },
-      orderBy: { createdAt: "desc" },
-    });
+      [`products-query-${JSON.stringify(filter || {})}`],
+      { revalidate: 3600, tags: ["products"] }
+    );
 
+    const rawProducts = await fetchCached();
     const products = rawProducts.map(formatPrismaProductToPerfume);
     return { success: true, products };
   } catch (error: any) {
@@ -137,6 +144,7 @@ export async function createProduct(data: {
 
     revalidatePath("/admin");
     revalidatePath("/products");
+    revalidateTag("products", "max-age");
     return { success: true, product: formatPrismaProductToPerfume(product) };
   } catch (error: any) {
     console.error("Error creating product:", error);
@@ -154,6 +162,7 @@ export async function deleteProduct(productId: string) {
 
     revalidatePath("/admin");
     revalidatePath("/products");
+    revalidateTag("products", "max-age");
     return { success: true };
   } catch (error: any) {
     console.error("Error deleting product:", error);
