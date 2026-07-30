@@ -2,6 +2,12 @@
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { env } from "@/lib/env";
+import Stripe from "stripe";
+
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-02-24.acacia" as any,
+});
 
 export async function getUserOrders() {
   try {
@@ -159,7 +165,7 @@ export async function getOrderBySessionId(sessionId: string) {
       return { success: false, error: "Session ID is required", order: null };
     }
 
-    const order = await db.order.findFirst({
+    let order = await db.order.findFirst({
       where: { stripeSessionId: sessionId },
       include: {
         items: {
@@ -181,8 +187,46 @@ export async function getOrderBySessionId(sessionId: string) {
       },
     });
 
+    // If order is UNPAID, verify with Stripe API and update status automatically
+    if (order && order.paymentStatus === "UNPAID") {
+      try {
+        const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
+        if (stripeSession.payment_status === "paid") {
+          order = await db.order.update({
+            where: { id: order.id },
+            data: {
+              paymentStatus: "PAID",
+              status: "PROCESSING",
+              stripePaymentId: (stripeSession.payment_intent as string) || undefined,
+              guestEmail: stripeSession.customer_details?.email || order.guestEmail,
+            },
+            include: {
+              items: {
+                include: {
+                  variant: {
+                    include: {
+                      product: {
+                        include: {
+                          images: {
+                            orderBy: { displayOrder: "asc" },
+                            take: 1,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+      } catch (err) {
+        console.warn("Could not retrieve status directly from Stripe API:", err);
+      }
+    }
+
     if (!order) {
-      return { success: false, error: "Order not found or processing", order: null };
+      return { success: false, error: "Order not found", order: null };
     }
 
     const formattedOrder = {
@@ -215,4 +259,3 @@ export async function getOrderBySessionId(sessionId: string) {
     return { success: false, error: error.message || "Failed to fetch order", order: null };
   }
 }
-

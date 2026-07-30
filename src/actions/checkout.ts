@@ -3,6 +3,7 @@
 import Stripe from "stripe";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
+import { auth } from "@/auth";
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-02-24.acacia" as any,
@@ -12,7 +13,7 @@ export interface CheckoutItemInput {
   productId: string;
   volumeMl: number;
   productName: string;
-  unitPrice: number; // in currency units or cents
+  unitPrice: number; // in currency units
   quantity: number;
   addSampleVial?: boolean;
 }
@@ -38,6 +39,10 @@ export async function createCheckoutSession(
       return { success: false, error: "Cart is empty" };
     }
 
+    const sessionUser = await auth();
+    const userEmail = guestEmail || sessionUser?.user?.email || undefined;
+    const userId = sessionUser?.user?.id || undefined;
+
     const domain = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map(
@@ -50,7 +55,7 @@ export async function createCheckoutSession(
               ? "Includes complimentary 2ml luxury sample vial"
               : undefined,
           },
-          unit_amount: Math.round(item.unitPrice * 100), // convert to cents
+          unit_amount: Math.round(item.unitPrice * 100), // convert to smallest currency unit (paise)
         },
         quantity: item.quantity,
       }),
@@ -64,7 +69,7 @@ export async function createCheckoutSession(
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
-      customer_email: guestEmail || undefined,
+      customer_email: userEmail,
       line_items: lineItems,
       metadata,
       success_url: `${domain}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -73,6 +78,68 @@ export async function createCheckoutSession(
         allowed_countries: ["US", "CA", "GB", "IN", "AE"],
       },
       billing_address_collection: "required",
+    });
+
+    // Generate unique luxury order number
+    const count = await db.order.count();
+    const orderNumber = `ORD-${String(count + 1001).padStart(5, "0")}`;
+
+    // Total amount in main currency units
+    const totalAmount = items.reduce(
+      (acc, item) => acc + item.unitPrice * item.quantity,
+      0,
+    );
+
+    // Build order items mapped to ProductVariants in DB
+    const orderItemsData = [];
+    for (const item of items) {
+      let variant = await db.productVariant.findFirst({
+        where: {
+          OR: [
+            { productId: item.productId, volumeMl: item.volumeMl },
+            { product: { slug: item.productId }, volumeMl: item.volumeMl },
+          ],
+        },
+      });
+
+      if (!variant) {
+        variant = await db.productVariant.findFirst({
+          where: {
+            OR: [
+              { productId: item.productId },
+              { product: { slug: item.productId } },
+            ],
+          },
+        });
+      }
+
+      if (variant) {
+        orderItemsData.push({
+          variantId: variant.id,
+          productName: item.productName,
+          volumeMl: item.volumeMl,
+          unitPrice: Math.round(item.unitPrice),
+          quantity: item.quantity,
+          addSampleVial: !!item.addSampleVial,
+        });
+      }
+    }
+
+    // Persist order in database
+    await db.order.create({
+      data: {
+        orderNumber,
+        userId,
+        guestEmail: userEmail,
+        status: "PENDING",
+        paymentStatus: "UNPAID",
+        stripeSessionId: session.id,
+        totalAmount: Math.round(totalAmount),
+        shippingAddress: shippingAddress ? (shippingAddress as any) : undefined,
+        items: {
+          create: orderItemsData,
+        },
+      },
     });
 
     return { success: true, url: session.url };
