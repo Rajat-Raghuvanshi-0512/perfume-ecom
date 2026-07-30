@@ -24,8 +24,45 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        phone: { label: "Phone", type: "text" },
+        isOtpVerified: { label: "OTP Verified", type: "text" },
       },
       async authorize(credentials) {
+        // Option 1: Mobile Phone + OTP Authentication
+        if (credentials?.phone && credentials?.isOtpVerified === "true") {
+          const phoneRaw = String(credentials.phone).replace(/\D/g, "");
+          const formattedPhone = `+91${phoneRaw.slice(-10)}`;
+
+          let user = await db.user.findFirst({
+            where: {
+              OR: [
+                { phone: formattedPhone },
+                { email: `phone_${phoneRaw.slice(-10)}@mobile.maison-aura.com` },
+              ],
+            },
+          });
+
+          if (!user) {
+            user = await db.user.create({
+              data: {
+                phone: formattedPhone,
+                email: `phone_${phoneRaw.slice(-10)}@mobile.maison-aura.com`,
+                name: `Patron ${phoneRaw.slice(-4)}`,
+                role: "CUSTOMER",
+              },
+            });
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            role: user.role,
+          };
+        }
+
+        // Option 2: Email + Password Authentication
         const validatedFields = loginSchema.safeParse(credentials);
 
         if (!validatedFields.success) {
