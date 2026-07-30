@@ -4,7 +4,7 @@ import Stripe from "stripe";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 
-const stripe = new Stripe(env.STRIPE_SECRET_KEY || "sk_test_mock_key", {
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-02-24.acacia" as any,
 });
 
@@ -31,7 +31,7 @@ export interface CheckoutAddress {
 export async function createCheckoutSession(
   items: CheckoutItemInput[],
   guestEmail?: string,
-  shippingAddress?: CheckoutAddress
+  shippingAddress?: CheckoutAddress,
 ) {
   try {
     if (!items || items.length === 0) {
@@ -40,19 +40,21 @@ export async function createCheckoutSession(
 
     const domain = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => ({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: `${item.productName} (${item.volumeMl}ml)`,
-          description: item.addSampleVial
-            ? "Includes complimentary 2ml luxury sample vial"
-            : undefined,
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map(
+      (item) => ({
+        price_data: {
+          currency: "inr",
+          product_data: {
+            name: `${item.productName} (${item.volumeMl}ml)`,
+            description: item.addSampleVial
+              ? "Includes complimentary 2ml luxury sample vial"
+              : undefined,
+          },
+          unit_amount: Math.round(item.unitPrice * 100), // convert to cents
         },
-        unit_amount: Math.round(item.unitPrice * 100), // convert to cents
-      },
-      quantity: item.quantity,
-    }));
+        quantity: item.quantity,
+      }),
+    );
 
     const metadata: Record<string, string> = {};
     if (shippingAddress) {
@@ -76,7 +78,10 @@ export async function createCheckoutSession(
     return { success: true, url: session.url };
   } catch (error: any) {
     console.error("Error creating Stripe checkout session:", error);
-    return { success: false, error: error.message || "Failed to initialize checkout" };
+    return {
+      success: false,
+      error: error.message || "Failed to initialize checkout",
+    };
   }
 }
 
@@ -86,7 +91,7 @@ export async function createExpressBuyNowSession(
   volumeMl: number,
   unitPrice: number,
   addSampleVial: boolean = false,
-  shippingAddress?: CheckoutAddress
+  shippingAddress?: CheckoutAddress,
 ) {
   return createCheckoutSession(
     [
@@ -100,7 +105,6 @@ export async function createExpressBuyNowSession(
       },
     ],
     undefined,
-    shippingAddress
+    shippingAddress,
   );
 }
-

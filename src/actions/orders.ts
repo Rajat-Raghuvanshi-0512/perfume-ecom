@@ -152,3 +152,67 @@ export async function getOrderDetails(orderId: string) {
     return { success: false, error: error.message || "Failed to fetch order", order: null };
   }
 }
+
+export async function getOrderBySessionId(sessionId: string) {
+  try {
+    if (!sessionId) {
+      return { success: false, error: "Session ID is required", order: null };
+    }
+
+    const order = await db.order.findFirst({
+      where: { stripeSessionId: sessionId },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: {
+                  include: {
+                    images: {
+                      orderBy: { displayOrder: "asc" },
+                      take: 1,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      return { success: false, error: "Order not found or processing", order: null };
+    }
+
+    const formattedOrder = {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      stripePaymentId: order.stripePaymentId,
+      createdAt: order.createdAt.toISOString(),
+      totalAmount: order.totalAmount > 100000 ? Math.round(order.totalAmount / 100) : order.totalAmount,
+      shippingAddress: order.shippingAddress,
+      items: order.items.map((item) => ({
+        id: item.id,
+        variantId: item.variantId,
+        productId: item.variant?.productId,
+        productSlug: item.variant?.product?.slug,
+        productName: item.productName || item.variant?.product?.name || "Luxury Perfume",
+        subtitle: item.variant?.product?.subtitle,
+        volumeMl: item.volumeMl,
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        addSampleVial: item.addSampleVial,
+        image: item.variant?.product?.images[0]?.url || "/images/perfume-placeholder.png",
+      })),
+    };
+
+    return { success: true, order: formattedOrder };
+  } catch (error: any) {
+    console.error("Error fetching order by session ID:", error);
+    return { success: false, error: error.message || "Failed to fetch order", order: null };
+  }
+}
+
