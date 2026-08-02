@@ -9,9 +9,11 @@ import { ScentQuizSkeleton } from "@/components/storefront/storefront-skeletons"
 
 interface ScentQuizProps {
   onSelectPerfume: (perfume: Perfume) => void;
+  onBuyNow?: (perfume: Perfume, selectedMl?: number, price?: number) => void;
+  onAddToCart?: (perfume: Perfume, selectedMl?: number, price?: number) => void;
 }
 
-export function ScentQuiz({ onSelectPerfume }: ScentQuizProps) {
+export function ScentQuiz({ onSelectPerfume, onBuyNow, onAddToCart }: ScentQuizProps) {
   const [step, setStep] = useState<number>(1);
   const [vibe, setVibe] = useState<string>("");
   const [notePreference, setNotePreference] = useState<string>("");
@@ -260,12 +262,29 @@ export function ScentQuiz({ onSelectPerfume }: ScentQuizProps) {
                   {matchedPerfume.description}
                 </p>
 
-                <button
-                  onClick={() => onSelectPerfume(matchedPerfume)}
-                  className="w-full py-3.5 bg-[#D4AF37] text-[#0A0A0B] font-bold text-xs uppercase tracking-[0.2em] hover:bg-[#E6C687] transition-colors"
-                >
-                  Inspect & Acquire (Rs. {matchedPerfume.price.toLocaleString("en-IN")})
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <button
+                    onClick={() => onSelectPerfume(matchedPerfume)}
+                    className="py-3 px-3 bg-white/5 border border-[#D4AF37]/50 text-[#D4AF37] font-semibold text-xs uppercase tracking-wider hover:bg-[#D4AF37]/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Icon name="ViewIcon" className="w-4 h-4" />
+                    <span>Inspect Details</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (onBuyNow) {
+                        onBuyNow(matchedPerfume, 50, matchedPerfume.price);
+                      } else {
+                        onSelectPerfume(matchedPerfume);
+                      }
+                    }}
+                    className="py-3 px-3 bg-[#D4AF37] hover:bg-[#E6C687] text-[#0A0A0B] font-bold text-xs uppercase tracking-wider transition-all shadow-xl flex items-center justify-center gap-2"
+                  >
+                    <Icon name="FlashIcon" className="w-4 h-4 fill-current" />
+                    <span>Buy Now (Rs. {matchedPerfume.price.toLocaleString("en-IN")})</span>
+                  </button>
+                </div>
               </div>
 
               <button

@@ -14,57 +14,56 @@ interface NavbarProps {
 export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   return (
     <>
       {/* Top Banner */}
-      <div className="bg-[#0D0D0F] text-[#D4AF37] text-xs py-2 px-4 text-center tracking-[0.2em] font-medium border-b border-[#D4AF37]/15 flex justify-center items-center gap-3">
+      <div className="bg-[#0D0D0F] text-[#D4AF37] text-[9px] sm:text-xs py-1.5 px-3 text-center tracking-[0.12em] sm:tracking-[0.2em] font-medium border-b border-[#D4AF37]/15 flex justify-center items-center gap-2 sm:gap-3">
         <Icon
           name="SparklesIcon"
-          className="w-3.5 h-3.5 animate-pulse text-[#E6C687]"
+          className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-pulse text-[#E6C687] shrink-0"
         />
-        <span>
+        <span className="truncate">
           COMPLIMENTARY DISCOVERY SAMPLE VIAL WITH EVERY ORDER OVER Rs. 15,000
         </span>
         <Icon
           name="SparklesIcon"
-          className="w-3.5 h-3.5 animate-pulse text-[#E6C687]"
+          className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-pulse text-[#E6C687] shrink-0"
         />
       </div>
 
       {/* Main Glass Header */}
       <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-[#0A0A0B]/90 border-b border-white/10 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2">
           {/* Mobile Menu Toggle */}
           <div className="flex lg:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-[#F5F5F0] hover:text-[#D4AF37] p-2 transition-colors"
+              className="text-[#F5F5F0] hover:text-[#D4AF37] p-1.5 sm:p-2 transition-colors"
               aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? (
-                <Icon name="Cancel01Icon" className="w-6 h-6" />
+                <Icon name="Cancel01Icon" className="w-5 h-5 sm:w-6 sm:h-6" />
               ) : (
-                <Icon name="Menu01Icon" className="w-6 h-6" />
+                <Icon name="Menu01Icon" className="w-5 h-5 sm:w-6 sm:h-6" />
               )}
             </button>
           </div>
 
           {/* Generic Luxury Brand Logo */}
-          <div className="flex items-center gap-3">
-            <Link href="/" className="group flex items-center gap-3">
-              <div className="w-9 h-9 border border-[#D4AF37]/40 rounded-full flex items-center justify-center text-[#D4AF37] group-hover:border-[#D4AF37] group-hover:bg-[#D4AF37]/10 transition-all">
-                <span className="font-serif text-sm font-bold tracking-tighter">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <Link href="/" className="group flex items-center gap-2 sm:gap-3">
+              <div className="w-7 h-7 sm:w-9 sm:h-9 border border-[#D4AF37]/40 rounded-full flex items-center justify-center text-[#D4AF37] group-hover:border-[#D4AF37] group-hover:bg-[#D4AF37]/10 transition-all shrink-0">
+                <span className="font-serif text-xs sm:text-sm font-bold tracking-tighter">
                   RK
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-lg sm:text-xl font-serif tracking-[0.3em] text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors duration-300 font-light uppercase">
+                <span className="text-sm sm:text-xl font-serif tracking-[0.15em] sm:tracking-[0.3em] text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors duration-300 font-light uppercase whitespace-nowrap">
                   PARFUM ATELIER
                 </span>
-                <span className="text-[9px] tracking-[0.35em] text-[#D4AF37]/70 uppercase font-light -mt-0.5">
+                <span className="text-[8px] sm:text-[9px] tracking-[0.2em] sm:tracking-[0.35em] text-[#D4AF37]/70 uppercase font-light -mt-0.5 whitespace-nowrap">
                   Haute Parfumerie
                 </span>
               </div>
@@ -104,31 +103,30 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
           </nav>
 
           {/* Action Icons */}
-          <div className="flex items-center space-x-4">
-            {/* Search Trigger */}
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 text-[#C5C5C0] hover:text-[#D4AF37] transition-colors"
-              aria-label="Search"
-            >
-              <Icon name="Search01Icon" className="w-5 h-5" />
-            </button>
-
+          <div className="flex items-center space-x-1 sm:space-x-4">
             {/* Account / Login */}
             {session?.user ? (
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 border border-[#D4AF37]/30 px-3 py-1.5 transition-colors"
+                  className="flex items-center gap-1.5 sm:gap-2 text-xs uppercase tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-1.5 sm:px-3 sm:py-1.5 rounded-full sm:rounded-none transition-colors"
+                  aria-label="User Account"
                 >
-                  <Icon name="CrownIcon" className="w-4 h-4 text-[#D4AF37]" />
-                  <span className="max-w-[120px] truncate font-semibold">{session.user.name || session.user.email}</span>
+                  <Icon name="CrownIcon" className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                  <span className="hidden sm:inline max-w-[100px] md:max-w-[120px] truncate font-semibold">
+                    {session.user.name || session.user.email}
+                  </span>
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-[#121215] border border-[#D4AF37]/30 shadow-2xl py-2 z-50 text-xs uppercase tracking-wider animate-in fade-in duration-150">
-                    <div className="px-4 py-2 border-b border-white/10 font-mono text-[10px] text-[#A0A098] truncate">
-                      {session.user.email}
+                  <div className="absolute right-0 mt-2 w-52 bg-[#121215] border border-[#D4AF37]/30 shadow-2xl py-2 z-50 text-xs uppercase tracking-wider animate-in fade-in duration-150">
+                    <div className="px-4 py-2 border-b border-white/10 text-[10px] text-[#A0A098]">
+                      {session.user.name && (
+                        <div className="font-sans text-[#F5F5F0] font-semibold text-xs mb-0.5 truncate">
+                          {session.user.name}
+                        </div>
+                      )}
+                      <div className="font-mono truncate">{session.user.email}</div>
                     </div>
                     <Link
                       href="/profile"
@@ -169,9 +167,10 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="hidden sm:flex items-center gap-2 text-xs uppercase tracking-wider text-[#C5C5C0] hover:text-[#D4AF37] transition-colors p-2"
+                className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-[#C5C5C0] hover:text-[#D4AF37] transition-colors p-1.5 sm:p-2"
+                aria-label="Sign In"
               >
-                <Icon name="UserIcon" className="w-5 h-5" />
+                <Icon name="UserIcon" className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="hidden md:inline">VIP Sign In</span>
               </button>
             )}
@@ -179,39 +178,18 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
             {/* Cart Drawer Toggle */}
             <button
               onClick={onOpenCart}
-              className="relative p-2.5 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0A0A0B] transition-all duration-300 group"
+              className="relative p-1.5 sm:p-2.5 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0A0A0B] transition-all duration-300 group"
               aria-label="Open Cart"
             >
-              <Icon name="ShoppingBag01Icon" className="w-5 h-5" />
+              <Icon name="ShoppingBag01Icon" className="w-4 h-4 sm:w-5 sm:h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#D4AF37] text-[#0A0A0B] group-hover:bg-white font-bold text-[10px] flex items-center justify-center shadow-lg">
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[#D4AF37] text-[#0A0A0B] group-hover:bg-white font-bold text-[9px] sm:text-[10px] flex items-center justify-center shadow-lg">
                   {cartCount}
                 </span>
               )}
             </button>
           </div>
         </div>
-
-        {/* Search Bar Overlay */}
-        {searchOpen && (
-          <div className="border-t border-white/10 bg-[#121215] py-4 px-6 animate-in slide-in-from-top-2 duration-200">
-            <div className="max-w-3xl mx-auto flex items-center gap-3">
-              <Icon name="Search01Icon" className="w-5 h-5 text-[#D4AF37]" />
-              <input
-                type="text"
-                placeholder="Search notes (Oud, Amber, Bergamot, Vanilla)..."
-                className="w-full bg-transparent text-[#F5F5F0] placeholder-[#888880] focus:outline-none text-sm tracking-wide"
-                autoFocus
-              />
-              <button
-                onClick={() => setSearchOpen(false)}
-                className="text-[#888880] hover:text-white"
-              >
-                <Icon name="Cancel01Icon" className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Mobile Navigation Drawer (No public admin link) */}
         {mobileMenuOpen && (
@@ -265,17 +243,6 @@ export function Navbar({ onOpenCart, onOpenAuth, cartCount = 2 }: NavbarProps) {
                 </>
               )}
             </nav>
-            <div className="pt-4 border-t border-white/10">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenAuth();
-                }}
-                className="w-full py-2.5 border border-[#D4AF37] text-[#D4AF37] text-xs uppercase tracking-widest rounded-none hover:bg-[#D4AF37] hover:text-[#0A0A0B] transition-colors"
-              >
-                Sign In / VIP Membership
-              </button>
-            </div>
           </div>
         )}
       </header>

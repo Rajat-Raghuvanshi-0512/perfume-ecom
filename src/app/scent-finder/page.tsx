@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MOCK_PERFUMES } from "@/lib/mock-perfumes";
 import { Perfume, CartItem } from "@/types/perfume";
@@ -9,6 +9,9 @@ import { ScentQuiz } from "@/components/storefront/scent-quiz";
 import { QuickViewModal } from "@/components/storefront/quick-view-modal";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { AuthModal } from "@/components/storefront/auth-modal";
+import { BuyNowModal } from "@/components/storefront/buy-now-modal";
+import { useSession } from "next-auth/react";
+import { toast } from "@/components/ui/toast";
 
 export default function ScentFinderPage() {
   const [cartOpen, setCartOpen] = useState(false);
@@ -20,6 +23,47 @@ export default function ScentFinderPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([
     { perfume: MOCK_PERFUMES[0], selectedMl: 50, price: 24500, quantity: 1 },
   ]);
+
+  const { data: session } = useSession();
+  const [buyNowOpen, setBuyNowOpen] = useState(false);
+  const [pendingAuthForBuyNow, setPendingAuthForBuyNow] = useState(false);
+  const [buyNowSelection, setBuyNowSelection] = useState<{
+    perfume: Perfume;
+    selectedMl: number;
+    price: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (session?.user && buyNowSelection && pendingAuthForBuyNow) {
+      setPendingAuthForBuyNow(false);
+      setBuyNowOpen(true);
+    }
+  }, [session, buyNowSelection, pendingAuthForBuyNow]);
+
+  const handleBuyNow = (
+    perfume: Perfume,
+    selectedMl: number = 50,
+    price: number = perfume.price
+  ) => {
+    setBuyNowSelection({ perfume, selectedMl, price });
+    if (!session?.user) {
+      setPendingAuthForBuyNow(true);
+      toast.add({
+        title: "Patron Authentication Required",
+        description: "Please sign in or create an account to proceed with Direct Express Order.",
+        type: "info",
+      });
+      setAuthOpen(true);
+    } else {
+      setBuyNowOpen(true);
+    }
+  };
+
+  const handleCloseBuyNow = () => {
+    setBuyNowOpen(false);
+    setBuyNowSelection(null);
+    setPendingAuthForBuyNow(false);
+  };
 
   const handleAddToCart = (
     perfume: Perfume,
@@ -41,6 +85,11 @@ export default function ScentFinderPage() {
       return [...prev, { perfume, selectedMl, price, quantity: 1 }];
     });
     setCartOpen(true);
+    toast.add({
+      title: "Added to Cart",
+      description: `${perfume.name} (${selectedMl}ml) added to your selection.`,
+      type: "success",
+    });
   };
 
   const handleUpdateQuantity = (id: string, ml: number, delta: number) => {
@@ -95,6 +144,8 @@ export default function ScentFinderPage() {
       <div className="py-12">
         <ScentQuiz
           onSelectPerfume={(perfume) => setQuickViewPerfume(perfume)}
+          onBuyNow={(p, ml, price) => handleBuyNow(p, ml, price)}
+          onAddToCart={(p, ml, price) => handleAddToCart(p, ml, price)}
         />
       </div>
 
@@ -121,6 +172,7 @@ export default function ScentFinderPage() {
         perfume={quickViewPerfume}
         onClose={() => setQuickViewPerfume(null)}
         onAddToCart={(p, ml, price) => handleAddToCart(p, ml, price)}
+        onBuyNow={(p, ml, price) => handleBuyNow(p, ml, price)}
       />
 
       <CartDrawer
@@ -132,6 +184,14 @@ export default function ScentFinderPage() {
       />
 
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+
+      <BuyNowModal
+        isOpen={buyNowOpen}
+        onClose={handleCloseBuyNow}
+        perfume={buyNowSelection?.perfume || null}
+        selectedMl={buyNowSelection?.selectedMl || 50}
+        price={buyNowSelection?.price || 0}
+      />
     </div>
   );
 }

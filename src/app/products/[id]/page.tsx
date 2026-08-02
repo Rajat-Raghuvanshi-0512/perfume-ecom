@@ -453,6 +453,7 @@ export default function ProductDetailPage({
         perfume={quickViewPerfume}
         onClose={() => setQuickViewPerfume(null)}
         onAddToCart={(p, ml, price) => handleAddToCart(p, ml, price)}
+        onBuyNow={(p, ml, price) => handleBuyNow(p, ml, price)}
       />
 
       <CartDrawer
