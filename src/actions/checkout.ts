@@ -40,8 +40,15 @@ export async function createCheckoutSession(
     }
 
     const sessionUser = await auth();
-    const userEmail = guestEmail || sessionUser?.user?.email || undefined;
-    const userId = sessionUser?.user?.id || undefined;
+    if (!sessionUser || !sessionUser.user?.id) {
+      return { success: false, error: "Authentication required. Please log in to checkout." };
+    }
+    if (!shippingAddress) {
+      return { success: false, error: "Shipping address is required for checkout." };
+    }
+    
+    const userEmail = sessionUser.user.email || guestEmail || undefined;
+    const userId = sessionUser.user.id;
 
     const domain = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
