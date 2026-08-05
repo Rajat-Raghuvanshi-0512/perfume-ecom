@@ -67,12 +67,6 @@ export default function ProductsPage() {
       return [...prev, { perfume, selectedMl, price, quantity: 1 }];
     });
     setCartOpen(true);
-
-    toast.add({
-      title: "Added to Cart",
-      description: `${perfume.name} (${selectedMl}ml) added to your selection.`,
-      type: "success",
-    });
   };
 
   const { data: session } = useSession();

@@ -60,12 +60,6 @@ export default function StorefrontHomePage() {
       return [...prev, { perfume, selectedMl, price, quantity: 1 }];
     });
     setCartOpen(true);
-
-    toast.add({
-      title: "Added to Atelier Cart",
-      description: `${perfume.name} (${selectedMl}ml) added to your selection.`,
-      type: "success",
-    });
   };
 
   const handleUpdateQuantity = (id: string, ml: number, delta: number) => {

@@ -121,12 +121,6 @@ export default function ProductDetailPage({
       return [...prev, { perfume: p, selectedMl: ml, price, quantity: 1 }];
     });
     setCartOpen(true);
-
-    toast.add({
-      title: "Added to Cart",
-      description: `${p.name} (${ml}ml) added to your selection.`,
-      type: "success",
-    });
   };
 
   const handleUpdateQuantity = (
