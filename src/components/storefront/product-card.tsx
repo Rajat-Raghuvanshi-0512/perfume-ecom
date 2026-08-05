@@ -94,35 +94,35 @@ export function ProductCard({ perfume, onQuickView, onAddToCart, onBuyNow }: Pro
       </div>
 
       {/* Card Details & Actions */}
-      <div className="p-3.5 sm:p-4 space-y-3 flex-1 flex flex-col justify-between">
+      <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3 flex-1 flex flex-col justify-between">
         
         <div>
           {/* Family & Concentration */}
-          <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.18em] text-[#D4AF37] font-semibold mb-1">
-            <span className="truncate max-w-[130px] sm:max-w-none">{perfume.family}</span>
-            <span className="text-[#888880] font-mono text-[9px]">{perfume.concentration.split(" ")[0]}</span>
+          <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.15em] sm:tracking-[0.18em] text-[#D4AF37] font-semibold mb-1">
+            <span className="truncate max-w-[90px] sm:max-w-none">{perfume.family}</span>
+            <span className="text-[#888880] font-mono text-[8px] sm:text-[9px]">{perfume.concentration.split(" ")[0]}</span>
           </div>
 
           {/* Title & Subtitle */}
           <Link href={`/products/${perfume.id}`} className="block group-hover:text-[#D4AF37] transition-colors">
-            <h3 className="text-sm sm:text-base font-serif tracking-wider text-[#F5F5F0] font-medium line-clamp-1">
+            <h3 className="text-xs sm:text-base font-serif tracking-wider text-[#F5F5F0] font-medium line-clamp-1">
               {perfume.name}
             </h3>
-            <p className="text-[11px] text-[#A0A098] line-clamp-1 font-light italic mt-0.5">
+            <p className="text-[10px] sm:text-[11px] text-[#A0A098] line-clamp-1 font-light italic mt-0.5">
               "{perfume.subtitle}"
             </p>
           </Link>
 
           {/* Volume Selector Pills (Instant size picking) */}
-          <div className="mt-2.5 flex items-center gap-1.5">
-            <span className="text-[9px] uppercase tracking-widest text-[#777770]">Size:</span>
-            <div className="flex items-center gap-1">
+          <div className="mt-2 flex flex-wrap items-center gap-1">
+            <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-[#777770]">Size:</span>
+            <div className="flex flex-wrap items-center gap-1">
               {perfume.volumes.map((vol) => (
                 <button
                   key={vol.ml}
                   type="button"
                   onClick={() => setSelectedMl(vol.ml)}
-                  className={`px-2 py-0.5 text-[10px] font-mono transition-all rounded-none border ${
+                  className={`px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono transition-all rounded-none border ${
                     selectedMl === vol.ml
                       ? "bg-[#D4AF37] text-[#0A0A0B] border-[#D4AF37] font-bold shadow-sm"
                       : "bg-white/5 text-[#B5B5A8] border-white/10 hover:border-[#D4AF37]/40"
@@ -136,34 +136,34 @@ export function ProductCard({ perfume, onQuickView, onAddToCart, onBuyNow }: Pro
         </div>
 
         {/* Price & Dual Instant Action Buttons */}
-        <div className="pt-2.5 border-t border-white/10 space-y-2 mt-auto">
+        <div className="pt-2 border-t border-white/10 space-y-1.5 mt-auto">
           
           {/* Price & Rating Display */}
           <div className="flex items-baseline justify-between">
             <div>
-              <span className="text-[9px] text-[#888880] uppercase tracking-wider block">Price</span>
-              <span className="text-sm sm:text-base font-serif font-bold text-[#D4AF37]">
+              <span className="text-[8px] sm:text-[9px] text-[#888880] uppercase tracking-wider block">Price</span>
+              <span className="text-xs sm:text-base font-serif font-bold text-[#D4AF37]">
                 Rs. {activePrice.toLocaleString("en-IN")}
               </span>
             </div>
 
-            <div className="flex items-center gap-1 text-[10px] text-[#E6C687]">
+            <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] text-[#E6C687]">
               <Icon name="StarIcon" className="w-3 h-3 text-[#D4AF37]" />
               <span className="font-semibold">{perfume.rating}</span>
             </div>
           </div>
 
           {/* Action Buttons: Instant Buy Now & Add to Cart */}
-          <div className="grid grid-cols-2 gap-1.5 pt-1">
+          <div className="grid grid-cols-2 gap-1 pt-0.5">
             
             {/* ADD TO CART */}
             <button
               type="button"
               onClick={() => onAddToCart(perfume, selectedMl, activePrice)}
-              className="w-full h-10 px-2 bg-white/5 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#D4AF37] transition-all text-[10px] sm:text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-1 active:scale-95 touch-manipulation"
+              className="w-full h-8 sm:h-10 px-1 bg-white/5 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#D4AF37] transition-all text-[9px] sm:text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-0.5 sm:gap-1 active:scale-95 touch-manipulation"
               aria-label="Add to cart"
             >
-              <Icon name="ShoppingBag01Icon" className="w-3.5 h-3.5 shrink-0" />
+              <Icon name="ShoppingBag01Icon" className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
               <span>Add</span>
             </button>
 
@@ -172,10 +172,10 @@ export function ProductCard({ perfume, onQuickView, onAddToCart, onBuyNow }: Pro
               type="button"
               onClick={handleBuyNowClick}
               disabled={isBuyLoading}
-              className="w-full h-10 px-2 bg-[#D4AF37] hover:bg-[#E6C687] text-[#0A0A0B] transition-all text-[10px] sm:text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-1 shadow-md active:scale-95 disabled:opacity-50 touch-manipulation"
+              className="w-full h-8 sm:h-10 px-1 bg-[#D4AF37] hover:bg-[#E6C687] text-[#0A0A0B] transition-all text-[9px] sm:text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-0.5 sm:gap-1 shadow-md active:scale-95 disabled:opacity-50 touch-manipulation"
               aria-label="Buy Now"
             >
-              <Icon name="FlashIcon" className="w-3.5 h-3.5 shrink-0 fill-current" />
+              <Icon name="FlashIcon" className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 fill-current" />
               <span>{isBuyLoading ? "Express..." : "Buy Now"}</span>
             </button>
 

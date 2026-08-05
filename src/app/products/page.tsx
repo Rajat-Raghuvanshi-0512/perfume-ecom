@@ -30,6 +30,12 @@ export default function ProductsPage() {
   const [selectedConcentration, setSelectedConcentration] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">("featured");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  const activeFiltersCount =
+    (selectedFamily !== "ALL" ? 1 : 0) +
+    (selectedConcentration !== "ALL" ? 1 : 0) +
+    (searchQuery ? 1 : 0);
 
   useEffect(() => {
     async function loadProducts() {
@@ -177,8 +183,8 @@ export default function ProductsPage() {
         cartCount={cartTotalCount}
       />
 
-      {/* Page Header */}
-      <div className="bg-[#121215] border-b border-white/10 py-12 px-4 sm:px-6 lg:px-8">
+      {/* Page Header (Desktop Only) */}
+      <div className="hidden lg:block bg-[#121215] border-b border-white/10 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-4">
           {/* Breadcrumb Navigation */}
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-[#888]">
@@ -200,11 +206,162 @@ export default function ProductsPage() {
         </div>
       </div>
 
+      {/* Mobile Subheader & Filter Dropdown (Mobile Only) */}
+      <div className="lg:hidden sticky top-[56px] sm:top-[72px] z-30 bg-[#0A0A0B]/95 backdrop-blur-md border-b border-white/15 px-3 py-2.5 shadow-2xl">
+        <div className="flex items-center gap-2">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Icon
+              name="Search01Icon"
+              className="w-4 h-4 text-[#888] absolute left-3 top-1/2 -translate-y-1/2"
+            />
+            <input
+              type="text"
+              placeholder="Search notes or scents..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#141418] border border-white/20 focus:border-[#D4AF37] text-xs text-[#F5F5F0] pl-9 pr-7 py-2 outline-none placeholder-[#777]"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#888] hover:text-white p-0.5"
+                aria-label="Clear Search"
+              >
+                <Icon name="Cancel01Icon" className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Mobile Filter Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+            className={`px-3 py-2 border text-xs uppercase tracking-wider font-semibold flex items-center gap-1.5 transition-all shrink-0 ${
+              mobileFilterOpen || activeFiltersCount > 0
+                ? "bg-[#D4AF37] text-[#0A0A0B] border-[#D4AF37]"
+                : "bg-[#141418] text-[#F5F5F0] border-white/20 hover:border-[#D4AF37]/50"
+            }`}
+          >
+            <Icon name="FilterIcon" className="w-4 h-4 shrink-0" />
+            <span>Filter</span>
+            {activeFiltersCount > 0 && (
+              <span className="w-4 h-4 rounded-full bg-[#0A0A0B] text-[#D4AF37] text-[10px] font-bold flex items-center justify-center -mr-0.5">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Collapsible Mobile Filter Dropdown Drawer */}
+        {mobileFilterOpen && (
+          <div className="mt-2.5 p-4 bg-[#121215] border border-[#D4AF37]/30 shadow-2xl space-y-4 animate-in fade-in duration-200">
+            {/* Fragrance Family */}
+            <div>
+              <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-semibold block mb-2">
+                Fragrance Family
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {["ALL", "Oriental", "Woody", "Floral", "Fresh", "Gourmand", "Leather"].map((fam) => (
+                  <button
+                    key={fam}
+                    onClick={() => setSelectedFamily(fam)}
+                    className={`px-2.5 py-1 text-xs border transition-all ${
+                      selectedFamily === fam
+                        ? "bg-[#D4AF37] text-[#0A0A0B] border-[#D4AF37] font-bold shadow-sm"
+                        : "bg-white/5 text-[#C5C5C0] border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    {fam === "ALL" ? "All Families" : fam}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Concentration */}
+            <div>
+              <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-semibold block mb-2">
+                Concentration
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {["ALL", "Extrait", "Eau de Parfum"].map((conc) => (
+                  <button
+                    key={conc}
+                    onClick={() => setSelectedConcentration(conc)}
+                    className={`px-2.5 py-1 text-xs border transition-all ${
+                      selectedConcentration === conc
+                        ? "bg-[#D4AF37] text-[#0A0A0B] border-[#D4AF37] font-bold shadow-sm"
+                        : "bg-white/5 text-[#C5C5C0] border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    {conc === "ALL" ? "All Concentrations" : conc}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sort By */}
+            <div>
+              <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-semibold block mb-2">
+                Sort By
+              </label>
+              <div className="grid grid-cols-2 gap-1.5 text-xs">
+                {[
+                  { id: "featured", label: "Featured" },
+                  { id: "price-asc", label: "Price: Low to High" },
+                  { id: "price-desc", label: "Price: High to Low" },
+                  { id: "rating", label: "Highest Rating" },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setSortBy(opt.id as any)}
+                    className={`px-2.5 py-1.5 text-left border transition-all text-[11px] ${
+                      sortBy === opt.id
+                        ? "bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37] font-semibold"
+                        : "bg-white/5 text-[#888] border-white/10"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-3">
+              {activeFiltersCount > 0 ? (
+                <button
+                  onClick={() => {
+                    setSelectedFamily("ALL");
+                    setSelectedConcentration("ALL");
+                    setSearchQuery("");
+                  }}
+                  className="text-xs text-[#888] underline uppercase tracking-wider hover:text-white"
+                >
+                  Reset All
+                </button>
+              ) : (
+                <span className="text-[10px] text-[#666] uppercase tracking-widest">
+                  {filteredPerfumes.length} Fragrances
+                </span>
+              )}
+
+              <button
+                onClick={() => setMobileFilterOpen(false)}
+                className="px-4 py-2 bg-[#D4AF37] hover:bg-[#E6C687] text-[#0A0A0B] text-xs font-bold uppercase tracking-wider shadow-md ml-auto"
+              >
+                Apply ({filteredPerfumes.length})
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Main Catalog Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-12">
         <div className="flex flex-col lg:flex-row gap-10">
-          {/* Left Sidebar Filter Column */}
-          <aside className="w-full lg:w-64 space-y-8 shrink-0">
+          {/* Left Sidebar Filter Column (Desktop Only) */}
+          <aside className="hidden lg:block w-64 space-y-8 shrink-0">
             {/* Search Input */}
             <div className="space-y-2">
               <label className="text-[11px] uppercase tracking-wider text-[#D4AF37] font-semibold block">
@@ -309,9 +466,9 @@ export default function ProductsPage() {
           </aside>
 
           {/* Right Product Grid Area */}
-          <main className="flex-1 space-y-6">
-            {/* Top Toolbar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#121215] p-4 border border-white/10 text-xs">
+          <main className="flex-1 space-y-4 sm:space-y-6">
+            {/* Top Toolbar (Desktop Only) */}
+            <div className="hidden lg:flex flex-row items-center justify-between gap-4 bg-[#121215] p-4 border border-white/10 text-xs">
               <span className="text-[#888] uppercase tracking-wider">
                 Showing{" "}
                 <strong className="text-white">
@@ -338,7 +495,7 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            {/* Products Grid */}
+            {/* Products Grid (2 columns on mobile, 3 on lg desktop) */}
             {isLoading ? (
               <ProductGridSkeleton count={6} />
             ) : filteredPerfumes.length === 0 ? (
@@ -358,7 +515,7 @@ export default function ProductsPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6">
                 {filteredPerfumes.map((perfume) => (
                   <ProductCard
                     key={perfume.id}

@@ -283,21 +283,21 @@ export default function ProductDetailPage({
               <label className="block text-xs uppercase tracking-wider text-[#D4AF37] font-semibold">
                 Select Bottle Volume
               </label>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 {perfume.volumes.map((v) => (
                   <button
                     key={v.ml}
                     onClick={() => setSelectedMl(v.ml)}
-                    className={`py-4 px-3 border text-center transition-all ${
+                    className={`py-2.5 sm:py-4 px-1.5 sm:px-3 border text-center transition-all ${
                       selectedMl === v.ml
                         ? "border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]"
                         : "border-white/15 bg-[#121215] text-[#C5C5C0] hover:border-white/30"
                     }`}
                   >
-                    <span className="block text-base font-serif font-bold">
+                    <span className="block text-sm sm:text-base font-serif font-bold">
                       {v.ml} ml
                     </span>
-                    <span className="text-xs text-[#888] font-mono">
+                    <span className="text-[10px] sm:text-xs text-[#888] font-mono whitespace-nowrap">
                       Rs. {v.price.toLocaleString("en-IN")}
                     </span>
                   </button>
